@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Data Challenge</title>
+    <style>
+        body { font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background: #f0f2f5; color: #2d3436; min-height: 100vh; padding: 40px 20px; margin: 0; }
+        .container { max-width: 800px; margin: auto; background: white; padding: 40px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
+        .header { text-align: center; margin-bottom: 50px; }
+        h1 { color: #1a1a1a; font-size: 2.5rem; text-transform: uppercase; letter-spacing: 4px; margin: 0; font-weight: 800; border-bottom: 4px solid #1a1a1a; display: inline-block; padding-bottom: 10px; }
+        .question { margin-bottom: 35px; padding: 25px; border-radius: 10px; background: #ffffff; border: 1px solid #edf2f7; transition: all 0.3s ease; }
+        .question p { font-weight: 600; font-size: 1.15rem; margin-top: 0; color: #2d3748; line-height: 1.4; }
+        label { display: block; margin-bottom: 12px; cursor: pointer; padding: 12px 15px; border: 1px solid #e2e8f0; border-radius: 8px; background: #f8fafc; transition: all 0.2s; font-size: 1rem; }
+        label:hover { border-color: #4a5568; background: #edf2f7; }
+        input[type="radio"] { margin-right: 12px; transform: scale(1.2); accent-color: #1a1a1a; }
+        .btn-container { text-align: center; margin-top: 50px; }
+        button { background: #1a1a1a; color: white; border: none; padding: 18px 50px; border-radius: 6px; cursor: pointer; font-size: 1rem; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; transition: all 0.3s; }
+        button:hover { background: #333; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
+        #result { margin-top: 30px; padding: 25px; border-radius: 8px; text-align: center; display: none; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h1>Challenge</h1>
+    </div>
+
+    <form id="quizForm">
+        <div class="question">
+            <p>1. Para maximizar la eficiencia y performance del motor tabular, ¿cuál es el esquema de modelado recomendado?</p>
+            <label><input type="radio" name="q1" value="A"> Esquema de Estrella (Star Schema).</label>
+            <label><input type="radio" name="q1" value="B"> Esquema de Copo de Nieve (Snowflake).</label>
+            <label><input type="radio" name="q1" value="C"> Tabla única desnormalizada (Flat Table).</label>
+        </div>
+
+        <div class="question">
+            <p>2. ¿Cuál es la función principal de CALCULATE dentro de una expresión DAX?</p>
+            <label><input type="radio" name="q2" value="A"> Ejecutar cálculos matemáticos básicos únicamente.</label>
+            <label><input type="radio" name="q2" value="B"> Evaluar una expresión en un contexto modificado por filtros específicos.</label>
+            <label><input type="radio" name="q2" value="C"> Crear una columna calculada de alto rendimiento.</label>
+        </div>
+
+        <div class="question">
+            <p>3. ¿Qué beneficio directo aporta el "Query Folding" al proceso de carga de datos?</p>
+            <label><input type="radio" name="q3" value="A"> Permite comprimir los datos un 50% más que el modo Import.</label>
+            <label><input type="radio" name="q3" value="B"> Delega la ejecución de transformaciones al servidor de origen, reduciendo el uso de recursos locales.</label>
+            <label><input type="radio" name="q3" value="C"> Crea automáticamente una tabla de fechas vinculada al modelo.</label>
+        </div>
+
+        <div class="question">
+            <p>4. ¿Qué herramienta externa es el estándar para debuguear y optimizar medidas DAX complejas?</p>
+            <label><input type="radio" name="q4" value="A"> Excel Power Pivot.</label>
+            <label><input type="radio" name="q4" value="B"> DAX Studio.</label>
+            <label><input type="radio" name="q4" value="C"> Visual Studio Code.</label>
+        </div>
+
+        <div class="question">
+            <p>5. Estás extrayendo datos de un volumen muy pesado. ¿Qué elemento técnico facilita una lectura rápida mediante la segmentación física de los datos?</p>
+            <label><input type="radio" name="q5" value="A"> Particionado de tablas e índices.</label>
+            <label><input type="radio" name="q5" value="B"> Vistas (Views) simples.</label>
+            <label><input type="radio" name="q5" value="C"> Procedimientos almacenados (Stored Procedures).</label>
+        </div>
+
+        <div class="question">
+            <p>6. Si el requerimiento exige ver transacciones del día de hoy con un volumen de 50 millones de registros, ¿qué modo usarías?</p>
+            <label><input type="radio" name="q6" value="A"> DirectQuery (para acceso en tiempo real a grandes volúmenes).</label>
+            <label><input type="radio" name="q6" value="B"> Modo Import con actualización una vez al día.</label>
+            <label><input type="radio" name="q6" value="C"> Dual Mode limitado a 1000 filas.</label>
+        </div>
+
+        <div class="question">
+            <p>7. Para asegurar que funciones de Time Intelligence operen correctamente, ¿qué es indispensable incluir?</p>
+            <label><input type="radio" name="q7" value="A"> Una columna de tipo texto con el nombre del mes.</label>
+            <label><input type="radio" name="q7" value="B"> Una Dimensión de Calendario con fechas continuas y marcada como "Date Table".</label>
+            <label><input type="radio" name="q7" value="C"> Una relación de muchos a muchos entre tablas de hechos.</label>
+        </div>
+
+        <div class="question">
+            <p>8. ¿Qué implica ajustar la "Granularidad" de un modelo de datos?</p>
+            <label><input type="radio" name="q8" value="A"> Definir el nivel de detalle mínimo de los registros (ej. transacción vs. resumen mensual).</label>
+            <label><input type="radio" name="q8" value="B"> Cambiar la resolución de los gráficos de 1080p a 4K.</label>
+            <label><input type="radio" name="q8" value="C"> Aumentar la cantidad de filtros visuales en el reporte.</label>
+        </div>
+
+        <div class="question">
+            <p>9. ¿Cuál es el método más seguro para validar la integridad de los datos entre el reporte y el origen?</p>
+            <label><input type="radio" name="q9" value="A"> Comparación visual rápida de los primeros registros.</label>
+            <label><input type="radio" name="q9" value="B"> Ejecutar queries de validación (Totales/Checksums) en la DB vs. medidas DAX.</label>
+            <label><input type="radio" name="q9" value="C"> Exportar a PDF y comparar con un reporte anterior.</label>
+        </div>
+
+        <div class="question">
+            <p>10. ¿Qué principio de diseño ayuda a que un usuario entienda un reporte de manera inmediata?</p>
+            <label><input type="radio" name="q10" value="A"> Utilizar colores brillantes y variados para cada gráfico.</label>
+            <label><input type="radio" name="q10" value="B"> Respetar la jerarquía visual y priorizar KPIs críticos en zonas de mayor impacto.</label>
+            <label><input type="radio" name="q10" value="C"> Agregar descripciones de texto largas para explicar cada métrica.</label>
+        </div>
+
+        <div class="btn-container">
+            <button type="button" id="submitBtn" onclick="calculateScore()">Enviar Resultados</button>
+        </div>
+    </form>
+
+    <div id="result"></div>
+</div>
+
+<script>
+    function calculateScore() {
+        const totalQuestions = 10;
+        let results = [];
+
+        for (let i = 1; i <= totalQuestions; i++) {
+            const selected = document.querySelector(`input[name="q${i}"]:checked`);
+            if (!selected) {
+                alert("Por favor, completa todas las preguntas antes de enviar.");
+                return;
+            }
+            
+            const options = Array.from(document.querySelectorAll(`input[name="q${i}"]`));
+            const index = options.indexOf(selected);
+            const letter = String.fromCharCode(65 + index); 
+            results.push(letter);
+        }
+
+        const encodedCode = btoa(results.join(""));
+        const resultDiv = document.getElementById('result');
+        const submitBtn = document.getElementById('submitBtn');
+
+        resultDiv.style.display = "block";
+        resultDiv.style.backgroundColor = "#ffffff";
+        resultDiv.style.border = "2px solid #1a1a1a";
+        
+        resultDiv.innerHTML = `
+            <p style="margin-bottom:15px; font-size: 1.1rem;"><strong>Challenge enviado con éxito.</strong></p>
+            <p style="font-size: 0.9rem; color: #4a5568; margin-bottom: 20px;">
+                Copia el siguiente código y envíalo a tu reclutador técnico:
+            </p>
+            <div style="background:#f1f5f9; padding:15px; border-radius:4px; font-family: monospace; font-weight: bold; word-break:break-all; border: 1px dashed #cbd5e0;">
+                ${encodedCode}
+            </div>
+        `;
+        
+        submitBtn.disabled = true;
+        submitBtn.innerText = "Enviado";
+        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+    }
+</script>
+
+</body>
+</html>
