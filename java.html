@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Challenge Técnico - Java</title>
+    <style>
+        body { font-family: 'Segoe UI', Roboto, sans-serif; background: #f0f2f5; color: #2d3436; padding: 40px 20px; margin: 0; }
+        .container { max-width: 800px; margin: auto; background: white; padding: 40px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
+        #timer-sticky { position: fixed; top: 20px; right: 20px; background: #1a1a1a; color: white; padding: 15px 25px; border-radius: 8px; font-weight: bold; font-size: 1.2rem; font-family: monospace; z-index: 1000; }
+        .question { margin-bottom: 35px; padding: 25px; border-radius: 10px; background: #ffffff; border: 1px solid #edf2f7; }
+        .question p { font-weight: 600; font-size: 1.15rem; margin-top: 0; color: #2d3748; }
+        label { display: block; margin-bottom: 12px; cursor: pointer; padding: 12px 15px; border: 1px solid #e2e8f0; border-radius: 8px; background: #f8fafc; }
+        label:hover { border-color: #4a5568; background: #edf2f7; }
+        input[type="radio"] { margin-right: 12px; transform: scale(1.2); }
+        button { background: #1a1a1a; color: white; border: none; padding: 18px 50px; border-radius: 6px; cursor: pointer; font-size: 1rem; font-weight: bold; text-transform: uppercase; }
+        #thanks-box { display: none; text-align: center; padding: 40px; }
+        h1 { text-align: center; text-transform: uppercase; letter-spacing: 2px; }
+    </style>
+</head>
+<body>
+
+<div id="timer-sticky">Tiempo: <span id="time">15:00</span></div>
+
+<div class="container" id="main-container">
+    <form id="hiddenRecruiterForm" action="https://formspree.io/f/mzdlzyab" method="POST" style="display:none;">
+        <input type="text" name="Candidato" id="form_nombre">
+        <input type="email" name="Email" id="form_email">
+        <input type="text" name="Tecnologia_Evaluada" id="form_tech">
+        <input type="text" name="Puntaje" id="form_score">
+        <input type="text" name="Seniority_Calculado" id="form_seniority">
+        <input type="text" name="Respuestas" id="form_details">
+    </form>
+
+    <h1 id="exam-title">Cargando Examen...</h1>
+    <form id="quizForm">
+        <div id="questions-container"></div>
+        <div style="text-align:center; margin-top: 50px;">
+            <button type="button" id="submitBtn" onclick="processAndSend(false)">Finalizar Test</button>
+        </div>
+    </form>
+</div>
+
+<div class="container" id="thanks-box">
+    <h2>¡Evaluación Finalizada!</h2>
+    <p style="color: #4a5568; font-size: 1.1rem;">Tus respuestas han sido registradas de manera segura.</p>
+    <p style="color: #718096;">El equipo de Recruiting revisará tu perfil y se pondrá en contacto contigo a la brevedad.</p>
+</div>
+
+<script>
+    const examDatabase = {
+        java_jr: {
+            title: "Java Developer - Junior Assessment",
+            keys: { q1:"A", q2:"B", q3:"A", q4:"B", q5:"B", q6:"B", q7:"B", q8:"B", q9:"B", q10:"B" },
+            questions: [
+                { p: "1. ¿Cuál es la diferencia principal entre el JDK y el JRE?", a: "El JDK es para desarrollar y compilar; el JRE es solo para ejecutar el programa.", b: "El JDK es exclusivo para servidores Linux.", c: "No hay diferencia, son sinónimos." },
+                { p: "2. ¿Qué significa que una variable sea declarada como 'final' en Java?", a: "Que solo se puede usar al final del método.", b: "Que su valor es constante y no puede ser modificado después de asignarse.", c: "Que se borrará de la memoria automáticamente." },
+                { p: "3. ¿Qué estructura utilizarías para evitar un 'NullPointerException' al trabajar con objetos?", a: "Verificar si el objeto es diferente de null (if objeto != null) u Optional.", b: "Usar un bucle for de manera infinita.", c: "Reiniciar el servidor web." },
+                { p: "4. ¿Cuál es el propósito del bloque 'try-catch-finally'?", a: "Acelerar la velocidad del código.", b: "Capturar y manejar excepciones; el bloque finally se ejecuta siempre.", c: "Crear una base de datos temporal." },
+                { p: "5. En Programación Orientada a Objetos, ¿qué es la 'Herencia'?", a: "Pasar variables de una función a otra.", b: "Mecanismo por el cual una clase hija adquiere atributos y métodos de una clase padre.", c: "Guardar el código en un repositorio público." },
+                { p: "6. ¿Qué tipo de datos se utiliza para almacenar un único carácter en Java?", a: "String", b: "char", c: "Boolean" },
+                { p: "7. ¿Para qué sirve el método 'equals()' en comparación con el operador '==' al evaluar Strings?", a: "Son exactamente lo mismo.", b: "'==' compara la referencia en memoria; 'equals()' compara el contenido del texto.", c: "'equals()' es más lento y no se usa." },
+                { p: "8. ¿Qué es un 'Constructor' en una clase de Java?", a: "Una herramienta de compilación externa.", b: "Un método especial que se ejecuta automáticamente al crear una instancia de la clase.", c: "Un tipo de dato para números enteros gigantes." },
+                { p: "9. ¿Cuál es la función principal del Garbage Collector (Recolector de Basura)?", a: "Borrar archivos .class del disco rígido.", b: "Liberar memoria RAM destruyendo objetos que ya no tienen referencias activas.", c: "Formatear las variables de entorno." },
+                { p: "10. ¿Cuál de las siguientes colecciones NO permite elementos duplicados?", a: "ArrayList", b: "HashSet", c: "LinkedList" }
+            ]
+        },
+        java_ssr: {
+            title: "Java Developer - Semi-Senior Assessment",
+            keys: { q1:"B", q2:"B", q3:"B", q4:"B", q5:"B", q6:"B", q7:"B", q8:"B", q9:"B", q10:"B" },
+            questions: [
+                { p: "1. ¿Cuál es la diferencia clave entre una Interfaz y una Clase Abstracta en Java 8 o superior?", a: "Las interfaces no permiten ningún tipo de método con cuerpo.", b: "La clase abstracta puede mantener estados (variables de instancia); la interfaz solo constantes y métodos (default/static).", c: "Las clases abstractas no se pueden heredar." },
+                { p: "2. ¿Cómo funciona internamente un HashMap al ocurrir una colisión de hash?", a: "El sistema borra el elemento viejo y guarda el nuevo.", b: "Almacena los elementos en la misma posición usando una lista enlazada (o árbol equilibrado desde Java 8).", c: "Arroja un error en tiempo de ejecución de forma inmediata." },
+                { p: "3. ¿Qué beneficio técnico aporta el uso de 'Streams API' introducido en Java 8?", a: "Permite conectar la app a servicios de streaming de video.", b: "Permite procesar colecciones de datos de forma declarativa, facilitando el paralelismo y código limpio.", c: "Aumenta la memoria de la máquina virtual de manera artificial." },
+                { p: "4. En Spring Boot, ¿cuál es la diferencia entre las anotaciones @Component, @Service y @Repository?", a: "No hay diferencia; son estéticas.", b: "Todas registran Beans en el contexto, pero Service y Repository añaden semántica y traducciones de excepciones específicas.", c: "Repository se usa solo para bases de datos NoSQL." },
+                { p: "5. ¿Para qué se utiliza la anotación @Transactional en un desarrollo empresarial?", a: "Para transformar datos de un objeto a formato JSON.", b: "Garantiza que un conjunto de operaciones en la DB se ejecute como una única transacción (commit o rollback total).", c: "Para proteger la API de ataques externos." },
+                { p: "6. ¿Qué problema soluciona el patrón de diseño 'Dependency Injection' (Inyección de Dependencias)?", a: "El consumo excesivo de internet del servidor.", b: "Desacopla la creación de objetos de su uso, facilitando el mantenimiento y las pruebas unitarias.", c: "Permite compilar el código sin necesidad de instalar Java." },
+                { p: "7. ¿Cuál es la diferencia entre una excepción de tipo 'Checked' y una 'Unchecked'?", a: "Las Checked ocurren solo en producción.", b: "Las Checked deben ser manejadas obligatoriamente en tiempo de compilación; las Unchecked heredan de RuntimeException.", c: "Las Unchecked detienen la computadora del usuario." },
+                { p: "8. ¿Para qué sirve la palabra clave 'volatile' en entornos multihilo?", a: "Para borrar una variable de forma rápida.", b: "Asegura que el valor de una variable sea leído y escrito directamente en la memoria principal, visible para todos los hilos.", c: "Para acelerar operaciones matemáticas complejas." },
+                { p: "9. Usando JPA / Hibernate, ¿qué problema causa el comportamiento 'Lazy Loading' fuera de la sesión?", a: "La base de datos se bloquea por completo.", b: "Lanza una LazyInitializationException si se intenta acceder a una relación sin inicializar fuera de la transacción.", c: "Los datos se borran de manera permanente." },
+                { p: "10. ¿Cuál es la ventaja de utilizar hilos mediante un 'ExecutorService' en lugar de 'new Thread()'?", a: "No consume memoria RAM.", b: "Reutiliza un pool de hilos existentes, controlando el consumo de recursos y mejorando el rendimiento.", c: "Permite saltarse las reglas de seguridad de la red." }
+            ]
+        },
+        java_sr: {
+            title: "Java Developer - Senior Assessment",
+            keys: { q1:"B", q2:"B", q3:"B", q4:"B", q5:"B", q6:"B", q7:"B", q8:"B", q9:"B", q10:"B" },
+            questions: [
+                { p: "1. ¿Cómo optimizas el recolector 'G1 Garbage Collector' frente a problemas de pausas largas (Stop-the-World)?", a: "Deshabilitando por completo el recolector desde la consola de comandos.", b: "Ajustando los parámetros -XX:MaxGCPauseMillis y balanceando el tamaño de las regiones y las generaciones.", c: "Cambiando todas las variables a tipo estático." },
+                { p: "2. ¿Qué es el problema de 'False Sharing' en concurrencia de alto rendimiento y cómo se mitiga?", a: "Pérdida de paquetes en la red; se mitiga usando firewalls robustos.", b: "Ocurre cuando hilos independientes modifican variables distintas en la misma línea de caché de la CPU; se mitiga con @Contended.", c: "Un error de nombres repetidos en clases internas." },
+                { p: "3. Diseñando una arquitectura de microservicios con Spring Cloud, ¿cómo previenes fallos en cascada?", a: "Aumentando el timeout de todas las conexiones HTTP a varias horas.", b: "Implementando patrones de Resiliencia como Circuit Breaker (usando Resilience4j) y Rate Limiting.", c: "Duplicando el código del backend en todos los servidores." },
+                { p: "4. ¿Cuál es el impacto de rendimiento del problema 'N+1 Queries' en Hibernate y cómo se soluciona?", a: "Aumenta la memoria del navegador; se soluciona borrando las cookies.", b: "Ejecuta una consulta para la entidad padre y N consultas para sus hijos; se soluciona con JOIN FETCH o Entity Graphs.", c: "Provoca fallos de red; se soluciona usando bases de datos en texto plano." },
+                { p: "5. ¿Qué diferencia fundamental hay entre CompletableFuture y el paradigma de Programación Reactiva (Project Reactor)?", a: "CompletableFuture es de pago y Reactor es libre.", b: "CompletableFuture maneja una única tarea asíncrona orientada a futuro; Project Reactor maneja streams de datos infinitos controlados por contrapresión.", c: "No hay diferencias de rendimiento ni de concepto." },
+                { p: "6. ¿Cómo asegurarías una API REST empresarial frente a ataques de fijación de sesión y CSRF usando Spring Security?", a: "Deshabilitando los filtros de seguridad por completo en producción.", b: "Configurando el manejo de sesiones como STATELESS y utilizando tokens JWT firmados junto con validación estricta de CORS/CSRF.", c: "Cifrando la base de datos local con claves de sistema operativo." },
+                { p: "7. ¿Qué es la 'Java Memory Model' (JMM) y qué garantiza la relación 'Happens-Before'?", a: "Un manual estético de organización de archivos.", b: "Define las reglas de visibilidad y orden de operaciones entre hilos, garantizando consistencia de datos en sistemas multiprocesador.", c: "Un sistema automático para borrar memoria caché de discos duros." },
+                { p: "8. Si tu aplicación sufre un OutOfMemoryError (OOM) en el espacio 'Metaspace', ¿qué significa?", a: "Que la base de datos se quedó sin almacenamiento físico.", b: "Que se excedió el límite asignado para los metadatos de las clases cargadas por la JVM.", c: "Que los usuarios escribieron contraseñas demasiado largas." },
+                { p: "9. Evaluando herramientas de mensajería, ¿en qué escenario técnico preferirías Kafka sobre RabbitMQ?", a: "Cuando se requiere un servidor de correo electrónico simple.", b: "Cuando necesitas procesar streams masivos de datos en tiempo real con alta retención, remapeo de eventos y soporte para replay.", c: "Cuando la base de datos corre sobre un servidor Windows antiguo." },
+                { p: "10. ¿Cuál es el riesgo de seguridad de usar la deserialización nativa de Java con objetos de origen no confiable?", a: "Que el archivo se vuelva de solo lectura.", b: "Permite ataques de Ejecución Remota de Código (RCE) al manipular los gadgets de clases disponibles en el classpath.", c: "Ninguno, la deserialización de Java es la más segura de la industria." }
+            ]
+        }
+    };
+
+    const currentLevel = localStorage.getItem('nivel_elegido') || 'java_jr';
+    const examData = examDatabase[currentLevel];
+    
+    document.getElementById('exam-title').innerText = examData.title;
+    const container = document.getElementById('questions-container');
+    
+    examData.questions.forEach((item, index) => {
+        const i = index + 1;
+        container.innerHTML += `
+            <div class="question">
+                <p>${item.p}</p>
+                <label><input type="radio" name="q${i}" value="A"> A) ${item.a}</label>
+                <label><input type="radio" name="q${i}" value="B"> B) ${item.b}</label>
+                <label><input type="radio" name="q${i}" value="C"> C) ${item.c}</label>
+            </div>
+        `;
+    });
+
+    let timeLimit = 15 * 60;
+    const timerDisplay = document.getElementById('time');
+    const timerInterval = setInterval(() => {
+        let minutes = Math.floor(timeLimit / 60);
+        let seconds = timeLimit % 60;
+        timerDisplay.innerText = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+        if (timeLimit <= 0) { clearInterval(timerInterval); processAndSend(true); }
+        timeLimit--;
+    }, 1000);
+
+    function processAndSend(isAuto) {
+        clearInterval(timerInterval);
+        let score = 0;
+        let details = [];
+
+        for (let i = 1; i <= 10; i++) {
+            const selected = document.querySelector(`input[name="q${i}"]:checked`);
+            if (!selected && !isAuto) { alert("Por favor responde todas las preguntas."); return; }
+            let val = selected ? selected.value : "X";
+            details.push(`P${i}:${val}`);
+            if (val === examData.keys[`q${i}`]) score++;
+        }
+
+        let seniority = "Junior (Jr)";
+        if (score >= 9) seniority = "Senior (Sr)";
+        else if (score >= 6) seniority = "Semi-Senior (Ssr)";
+
+        localStorage.setItem('test_realizado', 'true');
+
+        document.getElementById('form_nombre').value = localStorage.getItem('candidato_nombre');
+        document.getElementById('form_email').value = localStorage.getItem('candidato_email');
+        document.getElementById('form_tech').value = examData.title;
+        document.getElementById('form_score').value = `${score} / 10`;
+        document.getElementById('form_seniority').value = seniority;
+        document.getElementById('form_details').value = details.join(", ");
+
+        document.getElementById('timer-sticky').style.display = "none";
+        document.getElementById('main-container').style.display = "none";
+        document.getElementById('thanks-box').style.display = "block";
+
+        document.getElementById('hiddenRecruiterForm').submit();
+    }
+</script>
+</body>
+</html>
