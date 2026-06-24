@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Challenge Técnico - Android</title>
+    <style>
+        body { font-family: 'Segoe UI', Roboto, sans-serif; background: #f0f2f5; color: #2d3436; padding: 40px 20px; margin: 0; }
+        .container { max-width: 800px; margin: auto; background: white; padding: 40px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
+        #timer-sticky { position: fixed; top: 20px; right: 20px; background: #1a1a1a; color: white; padding: 15px 25px; border-radius: 8px; font-weight: bold; font-size: 1.2rem; font-family: monospace; z-index: 1000; }
+        .question { margin-bottom: 35px; padding: 25px; border-radius: 10px; background: #ffffff; border: 1px solid #edf2f7; }
+        .question p { font-weight: 600; font-size: 1.15rem; margin-top: 0; color: #2d3748; }
+        label { display: block; margin-bottom: 12px; cursor: pointer; padding: 12px 15px; border: 1px solid #e2e8f0; border-radius: 8px; background: #f8fafc; }
+        label:hover { border-color: #4a5568; background: #edf2f7; }
+        input[type="radio"] { margin-right: 12px; transform: scale(1.2); }
+        button { background: #1a1a1a; color: white; border: none; padding: 18px 50px; border-radius: 6px; cursor: pointer; font-size: 1rem; font-weight: bold; text-transform: uppercase; }
+        #thanks-box { display: none; text-align: center; padding: 40px; }
+        h1 { text-align: center; text-transform: uppercase; letter-spacing: 2px; }
+    </style>
+</head>
+<body>
+
+<div id="timer-sticky">Tiempo: <span id="time">15:00</span></div>
+
+<div class="container" id="main-container">
+    <form id="hiddenRecruiterForm" action="https://formspree.io/f/mzdlzyab" method="POST" style="display:none;">
+        <input type="text" name="Candidato" id="form_nombre">
+        <input type="email" name="Email" id="form_email">
+        <input type="text" name="Tecnologia_Evaluada" id="form_tech">
+        <input type="text" name="Puntaje" id="form_score">
+        <input type="text" name="Seniority_Calculado" id="form_seniority">
+        <input type="text" name="Respuestas" id="form_details">
+    </form>
+
+    <h1 id="exam-title">Cargando Examen...</h1>
+    <form id="quizForm">
+        <div id="questions-container"></div>
+        <div style="text-align:center; margin-top: 50px;">
+            <button type="button" id="submitBtn" onclick="processAndSend(false)">Finalizar Test</button>
+        </div>
+    </form>
+</div>
+
+<div class="container" id="thanks-box">
+    <h2>¡Evaluación Finalizada!</h2>
+    <p style="color: #4a5568; font-size: 1.1rem;">Tus respuestas han sido registradas de manera segura.</p>
+    <p style="color: #718096;">El equipo de Recruiting revisará tu perfil y se pondrá en contacto contigo a la brevedad.</p>
+</div>
+
+<script>
+    const examDatabase = {
+        android_jr: {
+            title: "Android Developer - Junior Assessment",
+            questions: [
+                { id: 1, p: "1. ¿Cuál es el archivo principal de configuración de una aplicación Android donde se declaran los componentes básicos (Activities, Permissions, etc.)?", a: "build.gradle", b: "AndroidManifest.xml", c: "MainActivity.kt", correct: "B" },
+                { id: 2, p: "2. En Kotlin, ¿cuál es la diferencia principal entre declarar una variable con 'val' y otra con 'var'?", a: "'val' es para números y 'var' es para cadenas de texto.", b: "'val' define una variable de solo lectura (inmutable); 'var' define una variable mutable cuyo valor puede cambiar.", c: "'var' se borra automáticamente de la memoria RAM al cambiar de pantalla.", correct: "B" },
+                { id: 3, p: "3. ¿Qué componente del SDK de Android representa una pantalla única con una interfaz de usuario con la que interactúa el usuario?", a: "Service", b: "Activity", c: "Broadcast Receiver", correct: "B" },
+                { id: 4, p: "4. ¿Para qué se utiliza el componente 'Intent' en Android?", a: "Para compilar el código de Kotlin a código binario.", b: "Para comunicar componentes, como iniciar una nueva Activity o enviar datos entre ellas.", c: "Para conectarse directamente a una base de datos externa como MySQL.", correct: "B" },
+                { id: 5, p: "5. ¿Qué método del ciclo de vida de una Activity se ejecuta obligatoriamente al inicio para inflar el diseño XML o configurar Compose?", a: "onStart()", b: "onCreate()", c: "onResume()", correct: "B" },
+                { id: 6, p: "6. ¿Cuál es la ventaja de utilizar Jetpack Compose sobre el sistema tradicional de vistas basadas en archivos XML?", a: "Compose permite ejecutar código de Android de forma nativa en navegadores web de escritorio.", b: "Es un paradigma declarativo que simplifica la creación de UI escribiendo menos código directamente en Kotlin, eliminando los archivos XML.", c: "Compose no consume memoria RAM del dispositivo móvil.", correct: "B" },
+                { id: 7, p: "7. ¿Qué herramienta de gestión de dependencias y automatización de compilación se utiliza de forma estándar en proyectos Android modernos?", a: "Maven Central Manager", b: "Gradle (o Gradle Kotlin DSL)", c: "NPM Package Coordinator", correct: "B" },
+                { id: 8, p: "8. En Kotlin, ¿qué significa el operador '?.' (Safe Call)?", a: "Lanzar una excepción controlada si el valor es numérico.", b: "Ejecutar una llamada o acceder a una propiedad de forma segura solo si el objeto evaluado no es nulo (null).", c: "Detener la ejecución del hilo principal del procesador.", correct: "B" },
+                { id: 9, p: "9. ¿Qué vista o componente moderno utilizarías en el sistema tradicional de XML para mostrar una lista dinámica masiva de datos optimizando la memoria?", a: "ScrollView", b: "RecyclerView", c: "LinearLayout", correct: "B" },
+                { id: 10, p: "10. ¿Cuál es el propósito del componente de Jetpack 'ViewModel'?", a: "Diseñar los assets gráficos e iconos de la aplicación.", b: "Almacenar y administrar datos relacionados con la UI de forma consciente del ciclo de vida, sobreviviendo a cambios de configuración como rotaciones de pantalla.", c: "Establecer la conexión segura vía SSH con los servidores de backend.", correct: "B" },
+                { id: 11, p: "11. ¿Qué es un 'NullPointerException' en el contexto de Android tradicionales?", a: "Un fallo de red por falta de datos móviles.", b: "Un error en tiempo de ejecución que ocurre cuando el sistema intenta acceder a una referencia de objeto que apunta a null.", c: "Un error de compilación al olvidar cerrar una llave de código.", correct: "B" },
+                { id: 12, p: "12. ¿Cuál es la función principal de un Broadcast Receiver en Android?", a: "Renderizar animaciones complejas en la interfaz de usuario.", b: "Escuchar y responder a mensajes o eventos del sistema global de Android (como aviso de batería baja o cambio de red).", c: "Guardar contraseñas cifradas en el dispositivo.", correct: "B" },
+                { id: 13, p: "13. ¿Qué tipo de dato de Kotlin usarías para definir una lista inmutable de elementos?", a: "ArrayList", b: "listOf()", c: "mutableListOf()", correct: "B" },
+                { id: 14, p: "14. ¿Qué función cumple el componente SharedPreferences en una app Android?", a: "Permitir compartir fotos directo en redes sociales.", b: "Almacenar pequeñas cantidades de datos primitivos en formato clave-valor de manera persistente en el dispositivo.", c: "Descargar archivos grandes en segundo plano de manera asíncrona.", correct: "B" },
+                { id: 15, p: "15. ¿Qué significa el bloque 'init' dentro de una clase de Kotlin?", a: "El comando para inicializar el build del script de Gradle.", b: "Un bloque de código de inicialización que se ejecuta automáticamente cuando la clase es instanciada.", c: "El punto final de destrucción de la memoria del objeto.", correct: "B" },
+                { id: 16, p: "16. ¿Qué método del ciclo de vida de una Activity se ejecuta inmediatamente cuando otra ventana la oculta parcialmente pero sigue visible?", a: "onDestroy()", b: "onPause()", c: "onStop()", correct: "B" },
+                { id: 17, p: "17. ¿Para qué sirve usar 'strings.xml' en lugar de escribir textos fijos (hardcoded) en el código?", a: "Para que el compilador de Kotlin sea más veloz.", b: "Para facilitar la localización y traducción multi-idioma de la aplicación, centralizando los textos de la interfaz.", c: "Para proteger la base de datos local contra ataques informáticos.", correct: "B" },
+                { id: 18, p: "18. ¿Qué significa que una función en Kotlin sea declarada con la palabra clave 'suspend'?", a: "Que la función será cancelada por el sistema operativo si consume mucha batería.", b: "Que es una función destinada a ejecutarse de forma asíncrona dentro de una Corrutina (Coroutines), pudiendo pausar su ejecución sin bloquear el hilo principal.", c: "Que la función no puede retornar ningún tipo de valor.", correct: "B" },
+                { id: 19, p: "19. ¿Cuál de los siguientes es un layout de XML que permite diseñar interfaces complejas y planas evitando el anidamiento excesivo de vistas?", a: "FrameLayout", b: "ConstraintLayout", c: "RelativeLayout", correct: "B" },
+                { id: 20, p: "20. ¿Qué comando de la consola de comandos de Android permite ver los logs y el historial de errores del dispositivo en tiempo real?", a: "gradle build", b: "logcat", c: "adb devices", correct: "B" }
+            ]
+        },
+        android_ssr: {
+            title: "Android Developer - Semi-Senior Assessment",
+            questions: [
+                { id: 1, p: "1. Trabajando con arquitectura MVVM, ¿cómo se comunica el ViewModel con la View de forma reactiva y respetando el ciclo de vida?", a: "Invocando directamente métodos de la interfaz de la Activity mediante una referencia directa.", b: "Exponiendo flujos de datos observables (como LiveData o StateFlow) que la View observa activamente.", c: "Guardando los datos en SharedPreferences de manera continua en cada actualización.", correct: "B" },
+                { id: 2, p: "2. ¿Qué constructor de corrutinas (Coroutine Builder) utilizarías si necesitás iniciar una tarea asíncrona en segundo plano que retorne un resultado (futuro) mediante un await()?", a: "launch", b: "async", c: "runBlocking", correct: "B" },
+                { id: 3, p: "3. ¿Cuál es el propósito principal de usar la librería Room de Jetpack?", a: "Crear salas de chat multiusuario en tiempo real utilizando WebSockets.", b: "Proporcionar una capa de abstracción sobre SQLite para permitir un acceso robusto a la base de datos local utilizando mapeo de objetos de Kotlin.", c: "Optimizar el tamaño de compresión de las imágenes cacheadas en disco.", correct: "B" },
+                { id: 4, p: "4. En Jetpack Compose, ¿qué función cumple el bloque 'remember' dentro de una función composable?", a: "Guardar el estado de la aplicación de manera permanente en el disco local del móvil.", b: "Preservar el valor de un objeto a través de las sucesivas recomposiciones de la interfaz para evitar recalcularlo desde cero.", c: "Sincronizar las animaciones gráficas con el refresco de pantalla del hardware.", correct: "B" },
+                { id: 5, p: "5. ¿Qué despachador de Corrutinas (CoroutineDispatcher) elegirías para realizar operaciones pesadas de lectura/escritura en disco o llamadas de red HTTP?", a: "Dispatchers.Main", b: "Dispatchers.IO", c: "Dispatchers.Default", correct: "B" },
+                { id: 6, p: "6. ¿Cuál es la diferencia conceptual entre un SharedFlow y un StateFlow en las librerías de Coroutines de Kotlin?", a: "SharedFlow solo almacena datos booleanos y StateFlow acepta objetos complejos.", b: "StateFlow requiere un estado inicial y siempre retiene el último valor emitido a los nuevos observadores; SharedFlow está optimizado para eventos de una sola vez sin retención obligatoria.", c: "SharedFlow es síncrono y StateFlow es puramente asíncrono.", correct: "B" },
+                { id: 7, p: "7. ¿Para qué se utiliza la librería Retrofit en el ecosistema estándar de Android?", a: "Para migrar código heredado de Java hacia Kotlin de forma automatizada.", b: "Como cliente HTTP seguro para definir y consumir APIs REST de manera declarativa mediante interfaces de Kotlin.", c: "Para crear simuladores locales de pruebas automatizadas UI.", correct: "B" },
+                { id: 8, p: "8. ¿Qué problema soluciona la implementación de Inyección de Dependencias mediante herramientas como Hilt o Koin en una app mediana?", a: "Reduce el consumo de batería y datos móviles de la app en segundo plano.", b: "Desacopla la creación de objetos de su uso, facilitando el mantenimiento, la modularización y la inyección de mocks en pruebas unitarias.", c: "Cifra las URLs públicas de las APIs de backend de manera automática.", correct: "B" },
+                { id: 9, p: "9. ¿Cuál es el propósito del componente WorkManager de Jetpack?", a: "Administrar el orden de las tareas semanales del equipo de desarrollo en Jira.", b: "Programar tareas en segundo plano diferibles y garantizadas que se ejecuten incluso si la aplicación se cierra o el dispositivo se reinicia.", c: "Optimizar los tiempos de renderizado de los componentes gráficos en XML.", correct: "B" },
+                { id: 10, p: "10. En Kotlin, ¿cuál es la diferencia clave entre una clase declarada como 'data class' y una clase estándar?", a: "Las data classes no permiten heredar de interfaces.", b: "Las data classes implementan automáticamente métodos útiles como equals(), hashCode(), toString() y copy() basados en sus propiedades de constructor.", c: "Las data classes se guardan directamente encriptadas en la memoria caché.", correct: "B" },
+                { id: 11, p: "11. ¿Qué es una 'Extension Function' en Kotlin?", a: "Una función exclusiva para compilar scripts de Gradle remotos.", b: "La capacidad de extender una clase existente con nueva funcionalidad sin necesidad de heredar de ella o modificar su código fuente original.", c: "Una función que aumenta el tamaño de la pantalla de la app.", correct: "B" },
+                { id: 12, p: "12. ¿Qué función cumple el modificador 'lateinit' en Kotlin?", a: "Retrasar el renderizado de un componente gráfico de la UI.", b: "Prometer al compilador que una variable que no admite nulos será inicializada de forma manual antes de ser usada por primera vez en el código.", c: "Indicar que la variable se destruirá de forma tardía de la RAM.", correct: "B" },
+                { id: 13, p: "13. ¿Para qué sirve implementar el componente Navigation Component de Jetpack?", a: "Habilitar el posicionamiento global GPS de alta definición dentro de la app.", b: "Gestionar de manera unificada y visual el flujo de pantallas, animaciones de transición y paso de argumentos seguros entre fragmentos o composables.", c: "Conectar la app a plataformas de mapas vectoriales externos.", correct: "B" },
+                { id: 14, p: "14. ¿Cuál es el propósito del modificador 'by lazy' en la declaración de propiedades en Kotlin?", a: "Indicar que la propiedad será ignorada por el Garbage Collector.", b: "Delegar la inicialización del objeto para que ocurra únicamente en el momento exacto en que la propiedad sea accedida por primera vez en el flujo.", c: "Permitir que la variable cambie de tipo de dato dinámicamente en tiempo de ejecución.", correct: "B" },
+                { id: 15, p: "15. ¿Qué beneficio técnico aporta el uso del patrón Sealed Class / Sealed Interface en Kotlin al manejar estados de UI?", a: "Elimina la necesidad de utilizar variables de tipo Boolean.", b: "Representa jerarquías cerradas de tipos restringidos, permitiendo que las estructuras 'when' evalúen de forma exhaustiva todos los estados posibles sin requerir un bloque 'else'.", c: "Cifra los estados de la memoria ante ataques informáticos externos.", correct: "B" },
+                { id: 16, p: "16. ¿Qué ocurre si ejecutás una llamada de red síncrona o bloqueante directamente dentro del hilo Dispatchers.Main?", a: "La app se actualiza más rápido forzando los recursos de la CPU.", b: "El sistema operativo arroja una excepción NetworkOnMainThreadException o congela la interfaz del usuario provocando un ANR (Application Not Responding).", c: "Los datos móviles se consumen a doble velocidad de forma automática.", correct: "B" },
+                { id: 17, p: "17. ¿Para qué se utiliza la clase MutableStateOf en el contexto de Jetpack Compose?", a: "Para cambiar la orientación física de la pantalla del dispositivo.", b: "Para crear un estado observable que notifica de forma nativa a Compose que debe disparar una recomposición del componente cuando el valor interno cambie.", c: "Para empaquetar archivos adjuntos antes de enviarlos a una API.", correct: "B" },
+                { id: 18, p: "18. ¿Cuál es la función principal de la librería de Jetpack DataStore?", a: "Guardar archivos de video de gran resolución de manera asíncrona.", b: "Reemplazar de forma moderna a SharedPreferences, utilizando Corrutinas y Flow para almacenar datos primitivos u objetos estructurados de forma asíncrona y segura.", c: "Conectarse a bases de datos relacionales locales complejas.", correct: "B" },
+                { id: 19, p: "19. ¿Qué utilidad tiene el operador de RxJS o de Flow de Kotlin llamado 'catch'?", a: "Acelerar la transferencia de bytes en el canal de red.", b: "Interceptar y manejar excepciones o errores que ocurran aguas arriba dentro del flujo de datos, permitiendo emitir valores de contingencia de forma segura.", c: "Duplicar las transmisiones hacia múltiples servidores espejo de forma simultánea.", correct: "B" },
+                { id: 20, p: "20. Al escribir pruebas unitarias para un ViewModel que utiliza Corrutinas en segundo plano, ¿qué herramienta de testing es indispensable configurar para mockear el tiempo?", a: "Espresso UI Automation Kit", b: "TestDispatcher (como StandardTestDispatcher o UnconfinedTestDispatcher) junto con la regla Dispatchers.setMain.", c: "Mockito Server Emulator", correct: "B" }
+            ]
+        },
+        android_sr: {
+            title: "Android Developer - Senior Assessment",
+            questions: [
+                { id: 1, p: "1. ¿Cómo mitiga un Senior el riesgo de fugas de memoria (Memory Leaks) al recolectar flujos de Coroutines (Flow/StateFlow) dentro de una Activity o Fragment?", a: "Usando un bloque try-catch tradicional alrededor de cada emisión del flujo.", b: "Recolectando el flujo utilizando la API repeatOnLifecycle o flowWithLifecycle junto con el ciclo de vida de la View para suspender la recolección cuando la app pase a segundo plano.", c: "Invocando de forma explícita al Garbage Collector (System.gc()) al finalizar cada método.", correct: "B" },
+                { id: 2, p: "2. Diseñando una aplicación empresarial multimódulo de gran envergadura, ¿cuál es el objetivo clave de estructurar la inyección de dependencias mediante Hilt a nivel de componentes personalizados (Custom Components)?", a: "Eliminar el uso de archivos gradle.kts en los submódulos técnicos.", b: "Controlar el ciclo de vida y el alcance (scope) de las dependencias asociándolos a módulos dinámicos específicos, evitando fugas de memoria y sobrecarga en el gráfico global de objetos.", c: "Deshabilitar la verificación estática de tipos en tiempo de compilación para acelerar el build.", correct: "B" },
+                { id: 3, p: "3. ¿Qué impacto técnico tiene el uso inadecuado de recomposiciones inestables en Jetpack Compose y cómo lo solucionas usando la anotación @Stable o @Immutable?", a: "Provoca que la aplicación se desconecte de los servicios en la nube; se soluciona borrando la caché de Gradle.", b: "Provoca recomposiciones innecesarias y costosas en componentes UI complejos; se soluciona anotando los modelos de datos de librerías externas o mutables para indicarle al compilador de Compose que son estables.", c: "Provoca fallos de red; se soluciona modificando el archivo AndroidManifest.xml.", correct: "B" },
+                { id: 4, p: "4. Al implementar una Arquitectura de Microapps o Multimódulo, ¿cómo solucionás de forma limpia la navegación entre pantallas de módulos de features independientes que no se conocen entre sí (desacopladas)?", a: "Haciendo un import directo de las clases concretas rompiendo el desacoplamiento intencional.", b: "Utilizando el patrón de Mediador o Router abstraído en un módulo común (Core/Navigation) mediante interfaces que cada feature implementa o inyecta dinámicamente.", c: "Escribiendo las rutas como strings duros en cada Activity e iniciando intents implícitos genéricos.", correct: "B" },
+                { id: 5, p: "5. ¿Cómo optimizas el rendimiento de almacenamiento de Room cuando realizás inserciones masivas de miles de registros transaccionales en la base de datos local?", a: "Abriendo y cerrando la conexión de la base de datos por cada registro insertado de forma individual.", b: "Ejecutando la operación dentro de un bloque @Transaction de Room utilizando consultas por lotes (Batch updates) en un despachador exclusivo de hilos de background.", c: "Cambiando la configuración de Room para que procese de forma síncrona en el hilo principal de UI.", correct: "B" },
+                { id: 6, p: "6. ¿Qué estrategia aplicás para reducir drásticamente el tamaño del archivo APK final y proteger el código contra la ingeniería inversa en el build de producción?", a: "Deshabilitar las optimizaciones de Gradle y compilar en formato Debug abierto.", b: "Activar R8 en el build.gradle (minifyEnabled true, shrinkResources true) configurando reglas precisas en proguard-rules.pro para evitar falsos positivos de remoción.", c: "Migrar todas las imágenes vectoriales SVG a mapas de bits PNG de altísima resolución.", correct: "B" },
+                { id: 7, p: "7. ¿Para qué sirve el optimizador de rendimiento Baseline Profiles introducido en las últimas guías del SDK de Android modernos?", a: "Para acelerar la velocidad de descarga de la app desde la Google Play Store.", b: "Para proporcionar al compilador ART del dispositivo una lista predefinida de clases y métodos críticos que deben precompilarse, mejorando drásticamente el tiempo de arranque de la app y reduciendo los tirones (jank).", c: "Para automatizar la limpieza de los archivos temporales de caché en los teléfonos de los usuarios.", correct: "B" },
+                { id: 8, p: "8. Evaluando el rendimiento de Corrutinas en sistemas de alta concurrencia, ¿qué ocurre si un hilo de background es bloqueado por una operación síncrona de I/O de legado heredado pesada dentro de Dispatchers.Default?", a: "El hilo se replica automáticamente de forma infinita sin costo de CPU.", b: "Se agotan los hilos limitados asignados a la CPU para procesamiento paralelo computacional, degradando el rendimiento general de las corrutinas; debe aislarse estrictamente a Dispatchers.IO.", c: "El sistema operativo Android suspende el proceso de la app por completo arrojando un OOM.", correct: "B" },
+                { id: 9, p: "9. ¿Cómo garantizás de forma arquitectónica que las reglas de negocio críticas de la app permanezcan 100% agnósticas a los cambios en el SDK de Android, librerías de UI o frameworks de persistencia?", a: "Escribiendo todo el código dentro de controladores pesados de la capa de presentación (Activities).", b: "Implementando los principios de Clean Architecture, protegiendo el Domain Layer (Entities y Use Cases) de modo que no contenga dependencias ni importaciones de componentes de Android o librerías externas.", c: "Cifrando los submódulos de UI mediante claves de seguridad a nivel de sistema operativo.", correct: "B" },
+                { id: 10, p: "10. ¿Cuál es el riesgo de seguridad de almacenar tokens de acceso JWT de alta sensibilidad de forma directa y plana en un archivo SharedPreferences tradicional sin cifrar?", a: "Que la aplicación sea rechazada en tiempo de compilación por el compilador de Kotlin.", b: "Permite la extracción simple de credenciales en dispositivos rooteados o mediante la inspección de respaldos locales de la app; se mitiga utilizando la API de EncryptedSharedPreferences o Android Keystore.", c: "Ninguno, las SharedPreferences de Android son inaccesibles por diseño en todos los teléfonos modernos.", correct: "B" },
+                { id: 11, p: "11. Al implementar Dynamic Features (módulos bajo demanda) en un ecosistema empresarial grande, ¿cuál es el beneficio principal en el ciclo de distribución?", a: "Permite saltearse los procesos de revisión obligatorios de la consola de Google Play.", b: "Reduce el tamaño inicial de descarga descargando módulos funcionales complementarios únicamente cuando el usuario lo solicite explícitamente en la ejecución.", c: "Automatiza la generación del backlog técnico del equipo de desarrollo.", correct: "B" },
+                { id: 12, p: "12. ¿Qué ventaja sustancial aporta el operador flatMapLatest de Flow en comparación con flatMapConcat ante flujos rápidos de datos asíncronos?", a: "flatMapLatest congela los flujos paralelos para evitar variaciones de tipos.", b: "flatMapLatest cancela inmediatamente la recolección del flujo interno anterior cada vez que se emite un nuevo valor en el flujo origen, evitando procesar datos obsoletos.", c: "flatMapConcat optimiza el consumo de la GPU de manera unificada.", correct: "B" },
+                { id: 13, p: "13. ¿Qué técnica técnica de profiling utilizarías para identificar problemas de rendimiento relacionados con fugas de memoria profunda u objetos retenidos inapropiadamente?", a: "Espresso UI Blackbox Test Analyzer.", b: "Memory Profiler integrado en Android Studio para capturar y analizar un Heap Dump, o integrar la librería LeakCanary en compilaciones de desarrollo.", c: "Correr el comando adb wifi de forma continua desde la terminal remota.", correct: "B" },
+                { id: 14, p: "14. En Jetpack Compose, ¿qué impacto tiene omitir las claves estables (keys) dentro de un componente LazyColumn al reordenar o filtrar los elementos de la lista?", a: "Provoca que los estilos tipográficos CSS del frontend se pierdan por completo.", b: "Fuerza a Compose a recrear y recomponer de forma masiva e ineficiente cada ítem de la lista completa en lugar de simplemente reposicionarlos, causando saltos visuales.", c: "Invalida el ciclo de vida del ViewModel de manera irreversible.", correct: "B" },
+                { id: 15, p: "15. ¿Cuál es la diferencia fundamental en el control de excepciones entre usar un SupervisorJob y un Job convencional dentro de un CoroutineScope padre?", a: "SupervisorJob detiene de forma masiva todos los hilos del procesador ante cualquier error.", b: "En un Job convencional, el fallo de un hijo cancela inmediatamente a todo el scope; en un SupervisorJob, el fallo de un hijo no afecta la continuidad operativa de los demás hijos del flujo.", c: "Convencional no permite el uso del modificador asíncrono launch.", correct: "B" },
+                { id: 16, p: "16. Trabajando con la inyección de dependencias de Hilt, ¿para qué sirve configurar un Custom Component Entry Point (@EntryPoint)?", a: "Para compilar el código de Kotlin en plataformas nativas multiplataforma como iOS.", b: "Para acceder e inyectar dependencias gestionadas por Hilt en clases de legado o componentes internos del ciclo de vida donde Hilt no tiene soporte nativo estándar.", c: "Para crear un punto de acceso directo remoto hacia servidores en la nube de producción.", correct: "B" },
+                { id: 17, p: "17. ¿Cómo asegurarías de manera estricta la integridad de los datos de la app local almacenados en una base de datos de Room frente a intentos de manipulación física en el hardware?", a: "Haciendo copias de seguridad de las tablas en formato JSON de texto plano dentro de la tarjeta SD.", b: "Implementando SQLCipher integrado con Room mediante soporte de encriptación de base de datos completa con llaves resguardadas de forma dinámica en Android Keystore.", c: "Deshabilitando las capacidades de escritura física de la app en producción.", correct: "B" },
+                { id: 18, p: "18. Con respecto a las corrutinas, ¿cuál es el beneficio de utilizar la directiva 'yield()' dentro de un bucle de background computacional intensivo infinito?", a: "Borrar de forma reactiva las variables primitivas acumuladas en los hilos del sistema.", b: "Permite que la corrutina verifique de manera periódica el estado de cancelación del Scope, cediendo temporalmente el control de los hilos a otras tareas paralelas pendientes.", c: "Aumentar de manera artificial el rendimiento de los cores de procesamiento de la CPU.", correct: "B" },
+                { id: 19, p: "19. Diseñando una aplicación que maneja sincronizaciones en tiempo real mediante WebSockets, ¿cómo garantizás que la app no agote la batería del usuario al pasar a segundo plano?", a: "Manteniendo la conexión abierta sin interrupciones forzando bloqueos de hardware (WakeLocks) infinitos.", b: "Desconectando la sesión de red en segundo plano y delegando las actualizaciones periódicas críticas a WorkManager o Firebase Cloud Messaging con prioridades controladas.", c: "Duplicando el intervalo de ping-pong de red de forma indefinida en segundo plano.", correct: "B" },
+                { id: 20, p: "20. ¿Qué ventaja conceptual y práctica aporta el uso del compilador KSP (Kotlin Symbol Processing) sobre KAPT en la velocidad de compilación de proyectos Android modernos?", a: "KSP traduce el código fuente directamente a JavaScript eliminando el uso de la máquina virtual.", b: "KSP analiza el código nativo de Kotlin de manera directa sin necesidad de generar stubs intermedios de Java, reduciendo los tiempos de compilación de herramientas como Room y Hilt hasta en un 50%.", c: "KSP deshabilita la verificación estática de tipos en tiempo de desarrollo de software.", correct: "B" }
+            ]
+        }
+    };
+
+    function getRandomQuestions(bank, count) {
+        let shuffled = [...bank];
+        for (let i = shuffled.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+        }
+        return shuffled.slice(0, count);
+    }
+
+    const currentLevel = localStorage.getItem('nivel_elegido') || 'android_jr';
+    const examData = examDatabase[currentLevel];
+    
+    document.getElementById('exam-title').innerText = examData.title;
+    const container = document.getElementById('questions-container');
+    
+    const selectedQuestions = getRandomQuestions(examData.questions, 10);
+    
+    selectedQuestions.forEach((item, index) => {
+        const visualIndex = index + 1;
+        const cleanText = item.p.replace(/^\d+\.\s*/, '');
+        
+        container.innerHTML += `
+            <div class="question" data-id="${item.id}" data-correct="${item.correct}">
+                <p>${visualIndex}. ${cleanText}</p>
+                <label><input type="radio" name="q${item.id}" value="A"> A) ${item.a}</label>
+                <label><input type="radio" name="q${item.id}" value="B"> B) ${item.b}</label>
+                <label><input type="radio" name="q${item.id}" value="C"> C) ${item.c}</label>
+            </div>
+        `;
+    });
+
+    let timeLimit = 15 * 60;
+    const timerDisplay = document.getElementById('time');
+    const timerInterval = setInterval(() => {
+        let minutes = Math.floor(timeLimit / 60);
+        let seconds = timeLimit % 60;
+        timerDisplay.innerText = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+        if (timeLimit <= 0) { clearInterval(timerInterval); processAndSend(true); }
+        timeLimit--;
+    }, 1000);
+
+    function processAndSend(isAuto) {
+        clearInterval(timerInterval);
+        let score = 0;
+        let details = [];
+        let unanswered = false;
+
+        selectedQuestions.forEach((item) => {
+            const selected = document.querySelector(`input[name="q${item.id}"]:checked`);
+            if (!selected && !isAuto) { unanswered = true; }
+            
+            let val = selected ? selected.value : "X";
+            details.push(`PreguntaID_${item.id}:${val}`);
+            if (val === item.correct) score++;
+        });
+
+        if (unanswered && !isAuto) { 
+            alert("Por favor responde todas las preguntas antes de finalizar."); 
+            return; 
+        }
+
+        let seniority = "Junior (Jr)";
+        if (score >= 9) seniority = "Senior (Sr)";
+        else if (score >= 6) seniority = "Semi-Senior (Ssr)";
+
+        localStorage.setItem('test_realizado', 'true');
+
+        document.getElementById('form_nombre').value = localStorage.getItem('candidato_nombre');
+        document.getElementById('form_email').value = localStorage.getItem('candidato_email');
+        document.getElementById('form_tech').value = examData.title;
+        document.getElementById('form_score').value = `${score} / 10`;
+        document.getElementById('form_seniority').value = seniority;
+        document.getElementById('form_details').value = details.join(", ");
+
+        document.getElementById('timer-sticky').style.display = "none";
+        document.getElementById('main-container').style.display = "none";
+        document.getElementById('thanks-box').style.display = "block";
+
+        document.getElementById('hiddenRecruiterForm').submit();
+    }
+</script>
+</body>
+</html>
