@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Challenge Técnico - Node.js</title>
+    <style>
+        body { font-family: 'Segoe UI', Roboto, sans-serif; background: #f0f2f5; color: #2d3436; padding: 40px 20px; margin: 0; }
+        .container { max-width: 800px; margin: auto; background: white; padding: 40px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
+        #timer-sticky { position: fixed; top: 20px; right: 20px; background: #1a1a1a; color: white; padding: 15px 25px; border-radius: 8px; font-weight: bold; font-size: 1.2rem; font-family: monospace; z-index: 1000; }
+        .question { margin-bottom: 35px; padding: 25px; border-radius: 10px; background: #ffffff; border: 1px solid #edf2f7; }
+        .question p { font-weight: 600; font-size: 1.15rem; margin-top: 0; color: #2d3748; }
+        label { display: block; margin-bottom: 12px; cursor: pointer; padding: 12px 15px; border: 1px solid #e2e8f0; border-radius: 8px; background: #f8fafc; }
+        label:hover { border-color: #4a5568; background: #edf2f7; }
+        input[type="radio"] { margin-right: 12px; transform: scale(1.2); }
+        button { background: #1a1a1a; color: white; border: none; padding: 18px 50px; border-radius: 6px; cursor: pointer; font-size: 1rem; font-weight: bold; text-transform: uppercase; }
+        #thanks-box { display: none; text-align: center; padding: 40px; }
+        h1 { text-align: center; text-transform: uppercase; letter-spacing: 2px; }
+    </style>
+</head>
+<body>
+
+<div id="timer-sticky">Tiempo: <span id="time">15:00</span></div>
+
+<div class="container" id="main-container">
+    <form id="hiddenRecruiterForm" action="https://formspree.io/f/mzdlzyab" method="POST" style="display:none;">
+        <input type="text" name="Candidato" id="form_nombre">
+        <input type="email" name="Email" id="form_email">
+        <input type="text" name="Tecnologia_Evaluada" id="form_tech">
+        <input type="text" name="Puntaje" id="form_score">
+        <input type="text" name="Seniority_Calculado" id="form_seniority">
+        <input type="text" name="Respuestas" id="form_details">
+    </form>
+
+    <h1 id="exam-title">Cargando Examen...</h1>
+    <form id="quizForm">
+        <div id="questions-container"></div>
+        <div style="text-align:center; margin-top: 50px;">
+            <button type="button" id="submitBtn" onclick="processAndSend(false)">Finalizar Test</button>
+        </div>
+    </form>
+</div>
+
+<div class="container" id="thanks-box">
+    <h2>¡Evaluación Finalizada!</h2>
+    <p style="color: #4a5568; font-size: 1.1rem;">Tus respuestas han sido registradas de manera segura.</p>
+    <p style="color: #718096;">El equipo de Recruiting revisará tu perfil y se pondrá en contacto contigo a la brevedad.</p>
+</div>
+
+<script>
+    // Banco de Preguntas Completo de Node.js (Jr, Ssr y Sr)
+    const examDatabase = {
+        node_jr: {
+            title: "Node.js Developer - Junior Assessment",
+            keys: { q1:"B", q2:"B", q3:"B", q4:"B", q5:"A", q6:"B", q7:"B", q8:"A", q9:"B", q10:"B" },
+            questions: [
+                { p: "1. ¿Qué es Node.js?", a: "Un framework de diseño CSS para crear interfaces web responsivas.", b: "Un entorno de ejecución de JavaScript del lado del servidor, basado en el motor V8 de Google Chrome.", c: "Una base de datos relacional orientada a almacenar objetos complejos." },
+                { p: "2. ¿Para qué sirve el archivo package.json en un proyecto de Node.js?", a: "Para guardar las contraseñas e información privada de los desarrolladores.", b: "Para gestionar la configuración del proyecto, sus metadatos y listar las dependencias (librerías).", c: "Es un archivo ejecutable que inicia el servidor en entornos Linux." },
+                { p: "3. ¿Qué comando utilizas en la terminal para instalar una librería externa (como Express)?", a: "node install express", b: "npm install express", c: "download package express" },
+                { p: "4. ¿Qué es el 'Event Loop' (Bucle de Eventos) en Node.js de manera simplificada?", a: "Un ciclo encargado de limpiar los archivos basura del disco duro del servidor cada hora.", b: "El mecanismo interno que permite realizar operaciones no bloqueantes de entrada/salida (I/O) de forma asíncrona.", c: "Una herramienta visual para trazar rutas en el desarrollo de APIs." },
+                { p: "5. ¿Cuál es la diferencia principal entre usar 'require' y usar 'import' en Node.js?", a: "require es parte del sistema tradicional CommonJS; import pertenece al estándar moderno de ES Modules.", b: "require solo sirve para imágenes e import sirve únicamente para código JS.", c: "No hay diferencia técnica; ambos comandos se introdujeron en la misma versión." },
+                { p: "6. Si estás construyendo una API con Express, ¿qué es un 'Middleware'?", a: "Una base de datos intermedia encargada de cachear textos planos.", b: "Una función que tiene acceso a los objetos de solicitud (req) y respuesta (res) para ejecutar código o modificarlos.", c: "Un error crítico que detiene el servidor de manera imprevista." },
+                { p: "7. ¿Cuál es el propósito del módulo nativo 'fs' en Node.js?", a: "Proveer herramientas de encriptación y ciberseguridad para contraseñas.", b: "Permitir la interacción con el sistema de archivos del servidor (leer, escribir, borrar archivos).", c: "Gestionar las conexiones de red y puertos de entrada del servidor web." },
+                { p: "8. ¿Cómo manejas un error dentro de una función asíncrona que utiliza la sintaxis de async/await?", a: "Envolviendo el código propenso a errores dentro de una estructura try/catch.", b: "Colocando un comando 'if (error == true)' al final del archivo JS.", c: "El sistema maneja todos los errores automáticamente y nunca detiene el servidor." },
+                { p: "9. ¿Qué diferencia hay entre dependencias normales (dependencies) y de desarrollo (devDependencies)?", a: "Las de desarrollo se ejecutan más rápido en computadoras Mac de Apple.", b: "Las normales se necesitan en producción; las de desarrollo solo se usan durante la programación y testing.", c: "Las dependencias normales son de código abierto y las de desarrollo son de pago." },
+                { p: "10. ¿Qué representa el objeto process.env en una aplicación de Node.js?", a: "Una lista con los procesos que el sistema operativo está ejecutando en tiempo real.", b: "Un objeto que contiene las variables de entorno configuradas en el sistema (claves de DB, puertos).", c: "El manual de usuario de la versión actual de Node.js instalada." }
+            ]
+        },
+        node_ssr: {
+            title: "Node.js Developer - Semi-Senior Assessment",
+            keys: { q1:"B", q2:"B", q3:"B", q4:"B", q5:"B", q6:"B", q7:"B", q8:"B", q9:"B", q10:"B" },
+            questions: [
+                { p: "1. ¿Qué es el patrón 'Streams' en Node.js y cuándo aporta una ventaja crítica?", a: "Un sistema para transmitir música por internet tipo Spotify.", b: "Una forma de manejar datos en trozos pequeños (chunks) de manera continua, ideal para procesar archivos gigantes sin saturar la RAM.", c: "Una metodología de diseño para bases de datos NoSQL basadas en documentos." },
+                { p: "2. Al crear un servidor con Express, ¿cuál es el peligro de omitir la función next() en un middleware?", a: "El servidor arrojará un error de falta de memoria y se reiniciará.", b: "La solicitud quedará colgada indefinidamente en el navegador, ya que el ciclo no avanzará hacia la siguiente ruta.", c: "Los datos enviados por el usuario se guardarán dos veces de manera errónea." },
+                { p: "3. ¿Qué sucede técnicamente si ocurre un error asíncrono y no capturas la excepción?", a: "Node.js ignora el error de forma silenciosa y el sistema operativo lo soluciona.", b: "Se emite un evento unhandledRejection, lo que provoca que el proceso termine abruptamente (crash del servidor).", c: "El servidor continúa funcionando pero duplica de forma aleatoria el consumo de CPU." },
+                { p: "4. ¿Para qué sirve el módulo nativo 'cluster' en Node.js?", a: "Permite agrupar bases de datos distribuidas en una sola red virtual.", b: "Permite crear múltiples instancias del proceso de Node.js que comparten el mismo puerto, aprovechando todos los núcleos de la CPU.", c: "Sirve para comprimir múltiples archivos de código en un solo paquete para producción." },
+                { p: "5. Para encriptar una contraseña de manera segura en el backend, ¿cuál es el enfoque correcto?", a: "Utilizar algoritmos reversibles simples como Base64 para facilitar la lectura del administrador.", b: "Utilizar algoritmos de hashing robustos específicos como bcrypt o argon2, añadiendo una sal (salt).", c: "Guardarla en texto plano y proteger el archivo con una clave maestra del sistema operativo." },
+                { p: "6. ¿Qué diferencia técnica existe entre los métodos process.nextTick() y setImmediate()?", a: "setImmediate() corre antes que cualquier operación del sistema de archivos.", b: "process.nextTick() ejecuta su callback inmediatamente al finalizar la operación actual; setImmediate() se encola para la fase de verificación.", c: "No existe diferencia técnica alguna; realizan la misma tarea." },
+                { p: "7. ¿Qué es el 'Callback Hell' y cómo se soluciona de forma nativa en la arquitectura moderna?", a: "Un error al conectar bases de datos relacionales; se soluciona migrando a NoSQL.", b: "La acumulación excesiva de callbacks anizados que vuelve el código ilegible; se soluciona con Promesas y async/await.", c: "Un bucle infinito de peticiones a APIs externas; se soluciona usando balanceadores." },
+                { p: "8. Al construir APIs REST, ¿cuál es el propósito de implementar un middleware de 'Rate Limiting'?", a: "Limitar la velocidad de descarga de archivos multimedia pesados para ahorrar costos.", b: "Restringir el número máximo de solicitudes que una IP puede realizar en un período de tiempo, previniendo abusos y ataques DDoS.", c: "Forzar el apagado automático del servidor si la DB no responde en menos de 3 segundos." },
+                { p: "9. ¿Cuál es el propósito del archivo package-lock.json?", a: "Contiene las contraseñas cifradas del repositorio de Git.", b: "Registra la versión exacta de todas las dependencias instaladas, garantizando entornos idénticos en desarrollo y producción.", c: "Sirve únicamente como un archivo temporal que se puede borrar antes del despliegue." },
+                { p: "10. Al comunicar servicios internos, ¿qué ventaja técnica ofrece gRPC frente a REST sobre JSON?", a: "gRPC no requiere el uso de conexiones de red y funciona mediante archivos locales.", b: "Utiliza HTTP/2 para multiplexar conexiones y Protocol Buffers para serializar datos de forma binaria, ofreciendo baja latencia.", c: "Permite visualizar gráficos de rendimiento directamente en la consola de comandos." }
+            ]
+        },
+        node_sr: {
+            title: "Node.js Developer - Senior Assessment",
+            keys: { q1:"B", q2:"B", q3:"B", q4:"B", q5:"B", q6:"B", q7:"B", q8:"B", q9:"B", q10:"B" },
+            questions: [
+                { p: "1. En tareas intensivas de CPU, ¿cómo se diferencia el módulo worker_threads del módulo cluster?", a: "cluster crea hilos ligeros y worker_threads duplica el puerto de red.", b: "cluster crea procesos independientes con su propia memoria; worker_threads ejecuta hilos dentro del mismo proceso compartiendo memoria RAM.", c: "worker_threads es de uso exclusivo para operaciones del disco duro." },
+                { p: "2. ¿Cómo solucionas un problema de 'Event Loop Block' provocado por código síncrono ineficiente?", a: "Reiniciando el servidor automáticamente cada 10 minutos desde la nube.", b: "Utilizando profilers para detectar la operación bloqueante (ej. JSON.parse gigante) y delegándola a Workers o dividiéndola de forma asíncrona.", c: "Aumentando la capacidad de almacenamiento en disco del servidor de base de datos." },
+                { p: "3. ¿Qué patrón de mensajería implementas para mitigar picos masivos y evitar la pérdida de eventos?", a: "Conexiones directas HTTP entre todos los servicios mediante peticiones REST tradicionales.", b: "Un bus de eventos basado en un Message Broker distribuido (como Kafka o RabbitMQ) con persistencia e idempotencia.", c: "Guardar los eventos como archivos de texto temporales en un servidor FTP." },
+                { p: "4. ¿Qué impacto de seguridad tiene deshabilitar la directiva X-Powered-By en las cabeceras Express?", a: "Reduce a la mitad el tamaño de los datos de respuesta web, duplicando la velocidad.", b: "Oculta que el backend corre sobre Node/Express, reduciendo la exposición a ataques dirigidos a vulnerabilidades conocidas.", c: "Provoca que los navegadores viejos bloqueen el acceso por motivos de certificados." },
+                { p: "5. ¿Qué bandera de configuración (V8 flag) ajustas si tu app necesita superar el límite de memoria RAM por defecto?", a: "--node-memory-unlimited", b: "--max-old-space-size=TAMANIO_EN_MB", c: "--v8-allocation-pool=true" },
+                { p: "6. ¿Cómo garantizas un 'Graceful Shutdown' (Apagado Seguro) ante una señal SIGTERM?", a: "Cerrando el proceso de forma abrupta e inmediata con process.exit(0).", b: "Deteniendo nuevas conexiones, esperando a que las peticiones activas finalicen y cerrando ordenadamente las DBs antes de terminar.", c: "Forzando el reinicio del servidor físico mediante un comando enviado a la nube." },
+                { p: "7. Para escribir complementos nativos optimizados de bajo nivel, ¿cuál es el estándar recomendado?", a: "Escribir el código en C tradicional modificando directamente los archivos fuente de V8.", b: "Utilizar la API Node-API (anteriormente N-API), que garantiza una interfaz binaria estable (ABI) independiente de la versión de Node.", c: "Compilar el código usando scripts antiguos de Bash sobre sistemas Unix." },
+                { p: "8. ¿Qué estrategia técnica evita las condiciones de carrera (Race Conditions) al actualizar el balance de una cuenta?", a: "Confiar en que la naturaleza monohilo de Node.js previene automáticamente cualquier conflicto en la base de datos.", b: "Utilizar mecanismos de bloqueo a nivel de persistencia (bloqueos pesimistas SELECT FOR UPDATE o bloqueos optimistas por versión).", c: "Duplicar la transacción en dos DBs distintas y elegir el valor más alto al final del día." },
+                { p: "9. ¿Qué riesgo previenes al validar los datos de usuario antes de pasarlos a child_process.exec?", a: "Ataques de Cross-Site Request Forgery (CSRF) de origen visual.", b: "Vulnerabilidades de Inyección de Comandos (Command Injection), que permitirían ejecutar código malicioso con privilegios de Node.", c: "Fugas de memoria locales provocadas por variables con nombres duplicados." },
+                { p: "10. Al implementar flujos JWT, ¿cuál es la mejor práctica para manejar la revocación inmediata de un token?", a: "Cambiar la llave secreta de encriptación del servidor cada vez que un usuario cierra sesión.", b: "Implementar una lista de denegación (Blacklist) en una DB en memoria rápida (como Redis) con un tiempo de vida (TTL) igual al de la expiración del token.", c: "Esperar a que el token expire por sí solo, ya que los tokens JWT no se pueden revocar." }
+            ]
+        }
+    };
+
+    const currentLevel = localStorage.getItem('nivel_elegido') || 'node_jr';
+    const examData = examDatabase[currentLevel];
+    
+    document.getElementById('exam-title').innerText = examData.title;
+    const container = document.getElementById('questions-container');
+    
+    examData.questions.forEach((item, index) => {
+        const i = index + 1;
+        container.innerHTML += `
+            <div class="question">
+                <p>${item.p}</p>
+                <label><input type="radio" name="q${i}" value="A"> A) ${item.a}</label>
+                <label><input type="radio" name="q${i}" value="B"> B) ${item.b}</label>
+                <label><input type="radio" name="q${i}" value="C"> C) ${item.c}</label>
+            </div>
+        `;
+    });
+
+    let timeLimit = 15 * 60;
+    const timerDisplay = document.getElementById('time');
+    const timerInterval = setInterval(() => {
+        let minutes = Math.floor(timeLimit / 60);
+        let seconds = timeLimit % 60;
+        timerDisplay.innerText = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+        if (timeLimit <= 0) { clearInterval(timerInterval); processAndSend(true); }
+        timeLimit--;
+    }, 1000);
+
+    function processAndSend(isAuto) {
+        clearInterval(timerInterval);
+        let score = 0;
+        let details = [];
+
+        for (let i = 1; i <= 10; i++) {
+            const selected = document.querySelector(`input[name="q${i}"]:checked`);
+            if (!selected && !isAuto) { alert("Por favor responde todas las preguntas."); return; }
+            let val = selected ? selected.value : "X";
+            details.push(`P${i}:${val}`);
+            if (val === examData.keys[`q${i}`]) score++;
+        }
+
+        let seniority = "Junior (Jr)";
+        if (score >= 9) seniority = "Senior (Sr)";
+        else if (score >= 6) seniority = "Semi-Senior (Ssr)";
+
+        localStorage.setItem('test_realizado', 'true');
+
+        document.getElementById('form_nombre').value = localStorage.getItem('candidato_nombre');
+        document.getElementById('form_email').value = localStorage.getItem('candidato_email');
+        document.getElementById('form_tech').value = examData.title;
+        document.getElementById('form_score').value = `${score} / 10`;
+        document.getElementById('form_seniority').value = seniority;
+        document.getElementById('form_details').value = details.join(", ");
+
+        document.getElementById('timer-sticky').style.display = "none";
+        document.getElementById('main-container').style.display = "none";
+        document.getElementById('thanks-box').style.display = "block";
+
+        document.getElementById('hiddenRecruiterForm').submit();
+    }
+</script>
+</body>
+</html>
