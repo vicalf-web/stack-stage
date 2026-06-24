@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Evaluación - PowerBI Specialist</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f6f9;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+        .container {
+            max-width: 750px;
+            background: white;
+            margin: 30px auto;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        }
+        h1 {
+            color: #111;
+            font-size: 24px;
+            margin-bottom: 5px;
+            border-bottom: 3px solid #f2c811; /* Color característico de Power BI */
+            padding-bottom: 10px;
+        }
+        .subtitle {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 30px;
+        }
+        .question-block {
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+        }
+        .question-text {
+            font-weight: 600;
+            font-size: 16px;
+            margin-bottom: 12px;
+        }
+        .options label {
+            display: block;
+            background: #f8f9fa;
+            padding: 10px 15px;
+            margin-bottom: 8px;
+            border-radius: 6px;
+            cursor: pointer;
+            border: 1px solid #e9ecef;
+            transition: all 0.2s;
+        }
+        .options label:hover {
+            background: #e2e6ea;
+            border-color: #dae0e5;
+        }
+        .options input {
+            margin-right: 10px;
+        }
+        .btn {
+            background-color: #111;
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 15px;
+        }
+        .btn:hover {
+            background-color: #222;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Evaluación Técnica: PowerBI Specialist</h1>
+    <div class="subtitle">Respondé las siguientes preguntas seleccionadas de forma aleatoria.</div>
+    
+    <form id="quizForm">
+        <div id="questionsContainer"></div>
+        <button type="button" class="btn" onclick="enviarExamen()">Finalizar y Enviar Evaluación</button>
+    </form>
+</div>
+
+<script>
+// Banco de 60 preguntas sobre Power BI
+const bancoPreguntas = [
+    { q: "¿Qué significa DAX en Power BI?", a: ["Data Analysis Expressions", "Direct Access Exchange", "Digital Analytics Extension", "Data Asset Xylophone"], c: 0 },
+    { q: "¿Cuál es la extensión de archivo estándar para un proyecto de Power BI Desktop?", a: [".pbix", ".pbit", ".xlsx", ".powerbi"], c: 0 },
+    { q: "¿Qué lenguaje se utiliza principalmente dentro del editor de Power Query?", a: ["Lenguaje M", "DAX", "SQL", "Python"], c: 0 },
+    { q: "¿Cuál es la diferencia clave entre SUM y SUMX en DAX?", a: ["SUM opera sobre una columna; SUMX es una función iteradora que evalúa fila por fila", "SUMX es más rápido siempre", "SUM solo sirve para enteros", "No hay diferencia real"], c: 0 },
+    { q: "¿Qué componente de Power BI se encarga de la actualización automática de datos locales en la nube?", a: ["Power BI Gateway", "Power Query", "Power BI Desktop", "DirectQuery"], c: 0 },
+    { q: "¿Qué tipo de conexión NO almacena datos en el archivo .pbix?", a: ["DirectQuery", "Import", "Dual Mode", "Static Data"], c: 0 },
+    { q: "¿Para qué sirve la función CALCULATE en DAX?", a: ["Para evaluar una expresión en un contexto de filtro modificado", "Para hacer sumas complejas únicamente", "Para crear una nueva tabla física", "Para formatear texto"], c: 0 },
+    { q: "¿Qué vista del Desktop permite configurar las relaciones entre múltiples tablas?", a: ["Vista de Modelo", "Vista de Informe", "Vista de Datos", "Vista de Power Query"], c: 0 },
+    { q: "¿Cuál es la función principal del esquema de estrella (Star Schema)?", a: ["Optimizar el rendimiento separando hechos (facts) de dimensiones", "Hacer que los gráficos se vean circulares", "Conectar bases de datos relacionales con NoSQL", "Eliminar el uso de llaves primarias"], c: 0 },
+    { q: "¿Qué es una 'Dimensión de Tipo Conforme' (Conformed Dimension)?", a: ["Una dimensión compartida que se conecta a múltiples tablas de hechos", "Una tabla temporal", "Una métrica calculada", "Una fila de datos corruptos"], c: 0 },
+    { q: "¿Cuál de los siguientes es un tipo de cardinalidad válido en las relaciones de Power BI?", a: ["Uno a varios (1:*)", "Varios a ninguno (*:0)", "Infinito a infinito", "Único a único"], c: 0 },
+    { q: "¿Qué sucede al habilitar el filtrado bidireccional en una relación?", a: ["Los filtros fluyen en ambos sentidos, pero puede generar ambigüedad y baja de rendimiento", "Se duplican los datos", "El informe se bloquea automáticamente", "Se desactiva DirectQuery"], c: 0 },
+    { q: "¿Qué función DAX devuelve una tabla de una sola columna con los valores únicos?", a: ["VALUES", "FILTER", "ALL", "RELATED"], c: 0 },
+    { q: "¿Cómo se llama el proceso de combinar filas de diferentes tablas con estructuras similares en Power Query?", a: ["Anexar consultas (Append)", "Combinar consultas (Merge)", "Pivotar", "Transponer"], c: 1 },
+    { q: "¿Qué función usarías para traer una columna relacionada desde otra tabla del modelo?", a: ["RELATED", "LOOKUPVALUE", "CALCULATE", "CROSSFILTER"], c: 0 },
+    { q: "¿Cuál es la diferencia entre una columna calculada y una medida?", a: ["La columna se calcula en el almacenamiento; la medida se calcula al vuelo en tiempo de ejecución", "La columna no consume RAM", "La medida genera filas físicas", "Las columnas solo admiten texto"], c: 0 },
+    { q: "¿Para qué sirve la función ALL en DAX?", a: ["Ignora los filtros aplicados en el contexto de la evaluación", "Suma todos los registros", "Fuerza un error controlado", "Trae datos de internet"], c: 0 },
+    { q: "¿Qué herramienta externa permite analizar el rendimiento de las consultas DAX y el tamaño del modelo?", a: ["DAX Studio", "Tabular Editor", "ALM Toolkit", "SQL Profiler"], c: 0 },
+    { q: "¿Qué es el 'Contexto de Fila' en DAX?", a: ["La fila actual bajo consideración, típico en columnas calculadas o iteradores", "El orden de las filas en el reporte visual", "La cantidad total de registros de una tabla", "El filtro aplicado por una segmentación"], c: 0 },
+    { q: "¿Qué significa que un modelo sea 'Tabular'?", a: ["Que organiza los datos en tablas y los almacena en memoria de forma columnar", "Que solo acepta archivos separados por tabulaciones", "Que no permite relaciones", "Que funciona exclusivamente en la web"], c: 0 },
+    { q: "¿Qué función se utiliza para calcular acumulados en el año actual (Year-to-Date)?", a: ["TOTALYTD", "DATESBETWEEN", "SAMEPERIODLASTYEAR", "CALCULATEYTD"], c: 0 },
+    { q: "¿Cuál de las siguientes NO es una función de inteligencia de tiempo en DAX?", a: ["DATEADD", "SAMEPERIODLASTYEAR", "TEXTBEFOREDELIMITER", "CLOSINGBALANCEMONTH"], c: 2 },
+    { q: "¿Qué comando en Power Query transforma columnas en filas?", a: ["Anular dinamización de columnas (Unpivot)", "Dinamizar columna (Pivot)", "Transponer", "Invertir filas"], c: 0 },
+    { q: "¿Qué operador DAX representa la disyunción lógica (O / OR)?", a: ["||", "&&", "NOT", "IN"], c: 0 },
+    { q: "¿Qué operador DAX representa la conjunción lógica (Y / AND)?", a: ["&&", "||", "<>", "=="], c: 0 },
+    { q: "¿Para qué sirve la función DIVIDE en lugar del operador '/'?", a: ["Maneja automáticamente la división por cero sin lanzar errores", "Es un 50% más rápida", "Solo sirve para números enteros", "Multiplica si la división falla"], c: 0 },
+    { q: "¿Qué es una métrica semi-aditiva?", a: ["Una métrica que se puede sumar a través de algunas dimensiones pero no de todas (ej. el Stock)", "Una métrica con decimales corruptos", "Una columna de texto relacional", "Una medida que suma solo números negativos"], c: 0 },
+    { q: "¿Cómo se implementa la seguridad a nivel de fila (RLS) estática?", a: ["Creando roles en Power BI Desktop mediante expresiones de filtro DAX", "Ocultando las páginas del reporte", "Encriptando el servidor SQL", "Configurando contraseñas en las tablas"], c: 0 },
+    { q: "¿Qué función DAX captura el nombre del usuario logueado para RLS dinámico?", a: ["USERPRINCIPALNAME()", "USERNAME()", "USERID()", "CURRENTUSER()"], c: 0 },
+    { q: "¿Qué modo de almacenamiento combina Import y DirectQuery en una misma tabla?", a: ["Híbrido / Dual", "Directo extendido", "Live Connection", "Composite Direct"], c: 0 },
+    { q: "¿Cuál es el límite estándar de tamaño para un archivo .pbix subido a una capacidad compartida (Pro)?", a: ["1 GB", "10 GB", "500 MB", "Sin límite"], c: 0 },
+    { q: "¿Para qué sirve el 'Analizador de rendimiento' (Performance Analyzer)?", a: ["Mide el tiempo que tarda cada elemento visual en actualizarse y procesar consultas", "Verifica la velocidad del internet del usuario", "Elimina duplicados en Power Query", "Actualiza las tarjetas gráficas"], c: 0 },
+    { q: "¿Qué transformación de Power Query reduce el nivel de granularidad de los datos?", a: ["Agrupar por (Group By)", "Dividir columna", "Reemplazar valores", "Duplicar columna"], c: 0 },
+    { q: "¿Cuál es la función del motor VertiPaq en Power BI?", a: ["Comprimir y almacenar los datos en memoria columnar para consultas ultra rápidas", "Renderizar los mapas interactivos", "Exportar reportes a formato PDF", "Gestionar la autenticación de usuarios"], c: 0 },
+    { q: "¿Qué es una visualización de 'Esquema Jerárquico' (Decomposition Tree)?", a: ["Un visual de IA que desglosa una métrica a través de múltiples dimensiones consecutivas", "Un organigrama estático de la empresa", "Un mapa de calor geográfico", "Un gráfico de barras apiladas"], c: 0 },
+    { q: "¿Qué es una visualización de 'Preguntas y Respuestas' (Q&A)?", a: ["Permite a los usuarios hacer preguntas en lenguaje natural sobre sus datos", "Un chat de soporte técnico incorporado", "Un formulario de encuestas de satisfacción", "Un validador de contraseñas"], c: 0 },
+    { q: "¿Qué función DAX borra los filtros de una columna específica manteniendo los demás?", a: ["ALLEXCEPT", "ALL", "REMOVEFILTERS", "FILTER"], c: 2 },
+    { q: "¿Qué es el 'Contexto de Filtro'?", a: ["El conjunto de filtros aplicados a un informe mediante segmentaciones, filas, columnas o visuales", "La configuración del tamaño de la página", "El orden de procesamiento de las tablas de hechos", "El filtro exclusivo del servidor de origen"], c: 0 },
+    { q: "¿Qué hace la función KEEPFILTERS en DAX?", a: ["Modifica el comportamiento de CALCULATE para que no reemplace los filtros existentes, sino que los combine", "Evita que el usuario use segmentadores", "Guarda los filtros en un archivo de texto", "Congela el reporte visual"], c: 0 },
+    { q: "¿Cuál es el beneficio de deshabilitar la opción 'Fecha/hora automática' en la configuración?", a: ["Reduce el tamaño del archivo al evitar que Power BI cree tablas de fechas ocultas por cada columna de fecha", "Mejora la resolución de los gráficos", "Permite conectarse a bases de datos antiguas", "Activa el modo oscuro"], c: 0 },
+    { q: "¿Qué tipo de script se ejecuta al utilizar 'R' o 'Python' en Power Query?", a: ["Un script de transformación de datos externo", "Un desencadenador web", "Un formateador de hojas de cálculo", "Una macro de Excel"], c: 0 },
+    { q: "¿Qué es un flujo de datos (Dataflow) en Power BI?", a: ["Procesos de ETL ejecutados en la nube independientes de los reportes .pbix", "Un canal de transmisión en vivo de datos", "Un exportador automático a PowerPoint", "Una herramienta de migración de servidores locales"], c: 0 },
+    { q: "¿Qué nivel de licenciamiento permite compartir reportes con usuarios sin licencia Pro?", a: ["Power BI Premium (Capacidad P o EM)", "Power BI Pro", "Power BI Free", "Power BI Embedded únicamente"], c: 0 },
+    { q: "¿Qué es el 'Lineage View' en el servicio de Power BI?", a: ["Una vista interactiva que muestra la procedencia y conexiones entre orígenes, flujos, datasets y reportes", "Un árbol genealógico del equipo de IT", "El historial de cambios del código DAX", "Un listado de accesos por dirección IP"], c: 0 },
+    { q: "¿Qué función DAX permite iterar sobre una tabla para calcular un promedio ponderado o condicional?", a: ["AVERAGEX", "AVERAGE", "SUMX", "CALCULATE"], c: 0 },
+    { q: "¿Qué tipo de objeto visual te permite mostrar desviaciones o patrones fuera de lo común automáticamente?", a: ["Detección de anomalías (Anomaly Detection)", "Gráfico de dispersión simple", "Tarjeta de fila única", "KPI estándar"], c: 0 },
+    { q: "¿Qué hace la función USERELATIONSHIP en DAX?", a: ["Activa una relación inactiva específica durante la duración del cálculo", "Crea una relación física nueva en el modelo", "Borra el filtro de tablas secundarias", "Une tablas mediante un texto común"], c: 0 },
+    { q: "¿Cuál es el propósito del parámetro 'Crossfilter' en CALCULATE?", a: ["Cambiar el sentido del flujo de filtro en una relación sobre la marcha", "Hacer cruces entre hojas de Excel", "Desactivar la seguridad RLS", "Duplicar el peso del cálculo"], c: 0 },
+    { q: "¿Qué lenguaje se usa detrás de Tabular Editor para automatizar tareas (Scripting)?", a: ["C#", "DAX", "SQL", "JavaScript"], c: 0 },
+    { q: "¿Cuál de los siguientes NO es un tipo de datos válido en Power BI?", a: ["Blob / Imagen directa en columna tabular", "Número decimal", "Texto", "Fecha/Hora"], c: 0 },
+    { q: "¿Qué es la 'Plegabilidad de Consultas' (Query Folding)?", a: ["La capacidad de Power Query de traducir pasos de transformación a una sola consulta SQL para que la ejecute el origen", "El colapso de un archivo corrupto", "La agrupación de carpetas en el editor", "La compresión ZIP de los orígenes de datos"], c: 0 },
+    { q: "¿Qué sucede si no marcas una tabla de fechas personalizada como 'Tabla de fechas'?", a: ["Las funciones de inteligencia de tiempo nativas pueden fallar o no reconocer las claves de fecha correctamente", "El archivo no se puede guardar", "Se eliminan los fines de semana automáticamente", "No pasa nada"], c: 0 },
+    { q: "¿Qué función DAX se usa habitualmente para clasificar u ordenar elementos en base a una métrica?", a: ["RANKX", "TOPN", "ORDERBY", "SORT"], c: 0 },
+    { q: "¿Cómo se definen los parámetros de campo (Field Parameters)?", a: ["Una característica que permite a los usuarios cambiar dinámicamente las dimensiones o medidas que se muestran en un visual", "Variables globales de conexión a SQL", "Validadores de contraseñas de usuarios", "Los campos requeridos para un formulario"], c: 0 },
+    { q: "¿Qué es una visualización de tipo 'KPI' integrada en Power BI?", a: ["Muestra el progreso actual hacia un objetivo definido junto con una tendencia temporal", "Un contador de visitas al reporte", "Un indicador exclusivo del clima laboral", "Un gráfico financiero complejo de velas"], c: 0 },
+    { q: "¿Qué función DAX evalúa condiciones en cascada de manera más limpia que múltiples IF anidados?", a: ["SWITCH", "IFERROR", "AND", "CHOOSE"], c: 0 },
+    { q: "¿Cuál es el principal inconveniente de usar demasiadas relaciones bidireccionales?", a: ["Rendimiento lento y riesgo de ambigüedad en los caminos de filtrado", "El reporte se ve en blanco y negro", "Se desactiva la compresión VertiPaq", "Los datos de texto se convierten a números"], c: 0 },
+    { q: "¿Para qué sirve el modificador TREATAS en DAX?", a: ["Aplica el resultado de una expresión de tabla como filtros a columnas de una tabla no relacionada", "Convierte texto en número a la fuerza", "Lanza una alerta visual en pantalla", "Oculta valores vacíos"], c: 0 },
+    { q: "¿Qué componente web permite incrustar visualizaciones de Power BI en portales corporativos propios?", a: ["Power BI Embedded", "Power BI Gateway", "Power BI Report Server", "Power BI Desktop"], c: 0 },
+    { q: "En un entorno corporativo, ¿cuál es la mejor práctica para almacenar las consultas comunes de limpieza de datos?", a: ["Crear flujos de datos (Dataflows) reutilizables", "Copiar y pegar el código M en bloc de notas", "Dejarlo en archivos de Excel separados", "Duplicar las tablas en cada archivo .pbix"], c: 0 }
+];
+
+// Configuración del Examen: Elegir 10 al azar
+const CANTIDAD_PREGUNTAS = 10;
+let preguntasSeleccionadas = [];
+
+function inicializarQuiz() {
+    // Mezclar el banco de preguntas de forma aleatoria
+    const mezcladas = [...bancoPreguntas].sort(() => 0.5 - Math.random());
+    preguntasSeleccionadas = mezcladas.slice(0, CANTIDAD_PREGUNTAS);
+    
+    const container = document.getElementById('questionsContainer');
+    container.innerHTML = '';
+    
+    preguntasSeleccionadas.forEach((p, idx) => {
+        const block = document.createElement('div');
+        block.className = 'question-block';
+        
+        const text = document.createElement('div');
+        text.className = 'question-text';
+        text.innerText = `${idx + 1}. ${p.q}`;
+        block.appendChild(text);
+        
+        const optionsDiv = document.createElement('div');
+        optionsDiv.className = 'options';
+        
+        p.a.forEach((opt, oIdx) => {
+            const label = document.createElement('label');
+            const radio = document.createElement('input');
+            radio.type = 'radio';
+            radio.name = `question_${idx}`;
+            radio.value = oIdx;
+            radio.required = true;
+            
+            label.appendChild(radio);
+            label.appendChild(document.createTextNode(opt));
+            optionsDiv.appendChild(label);
+        });
+        
+        block.appendChild(optionsDiv);
+        container.appendChild(block);
+    });
+}
+
+function enviarExamen() {
+    const form = document.getElementById('quizForm');
+    if (!form.checkValidity()) {
+        alert("Por favor, respondé todas las preguntas antes de enviar.");
+        return;
+    }
+    
+    let correctas = 0;
+    let respuestasCandidato = [];
+    
+    preguntasSeleccionadas.forEach((p, idx) => {
+        const seleccionada = document.querySelector(`input[name="question_${idx}"]:checked`).value;
+        respuestasCandidato.push({
+            pregunta: p.q,
+            respuestaDada: p.a[seleccionada],
+            esCorrecta: parseInt(seleccionada) === p.c
+        });
+        if (parseInt(seleccionada) === p.c) {
+            correctas++;
+        }
+    });
+    
+    const score = ((correctas / CANTIDAD_PREGUNTAS) * 100).toFixed(0);
+    
+    // Guardar datos del candidato localmente para recuperarlos en la pantalla de éxito
+    localStorage.setItem('test_realizado', 'true');
+    localStorage.setItem('score_final', score);
+    localStorage.setItem('respuestas_detalle', JSON.stringify(respuestasCandidato));
+    
+    // Almacenamos para el sistema
+    localStorage.setItem('nota_examen', score + "%");
+    localStorage.setItem('materia_evaluada', "PowerBI Specialist");
+    
+    // Redirección a la página final de estado/éxito
+    window.location.href = "status.html"; 
+}
+
+// Iniciar al cargar la página
+window.onload = inicializarQuiz;
+</script>
+
+</body>
+</html>
