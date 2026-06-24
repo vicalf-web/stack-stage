@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Challenge Técnico - Technical Leader</title>
+    <style>
+        body { font-family: 'Segoe UI', Roboto, sans-serif; background: #f0f2f5; color: #2d3436; padding: 40px 20px; margin: 0; }
+        .container { max-width: 800px; margin: auto; background: white; padding: 40px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
+        #timer-sticky { position: fixed; top: 20px; right: 20px; background: #1a1a1a; color: white; padding: 15px 25px; border-radius: 8px; font-weight: bold; font-size: 1.2rem; font-family: monospace; z-index: 1000; }
+        .question { margin-bottom: 35px; padding: 25px; border-radius: 10px; background: #ffffff; border: 1px solid #edf2f7; }
+        .question p { font-weight: 600; font-size: 1.15rem; margin-top: 0; color: #2d3748; }
+        label { display: block; margin-bottom: 12px; cursor: pointer; padding: 12px 15px; border: 1px solid #e2e8f0; border-radius: 8px; background: #f8fafc; }
+        label:hover { border-color: #4a5568; background: #edf2f7; }
+        input[type="radio"] { margin-right: 12px; transform: scale(1.2); }
+        button { background: #1a1a1a; color: white; border: none; padding: 18px 50px; border-radius: 6px; cursor: pointer; font-size: 1rem; font-weight: bold; text-transform: uppercase; }
+        #thanks-box { display: none; text-align: center; padding: 40px; }
+        h1 { text-align: center; text-transform: uppercase; letter-spacing: 2px; }
+    </style>
+</head>
+<body>
+
+<div id="timer-sticky">Tiempo: <span id="time">15:00</span></div>
+
+<div class="container" id="main-container">
+    <form id="hiddenRecruiterForm" action="https://formspree.io/f/mzdlzyab" method="POST" style="display:none;">
+        <input type="text" name="Candidato" id="form_nombre">
+        <input type="email" name="Email" id="form_email">
+        <input type="text" name="Tecnologia_Evaluada" id="form_tech">
+        <input type="text" name="Puntaje" id="form_score">
+        <input type="text" name="Resultado_Evaluacion" id="form_seniority">
+        <input type="text" name="Respuestas" id="form_details">
+    </form>
+
+    <h1 id="exam-title">Technical Leader Assessment</h1>
+    <form id="quizForm">
+        <div id="questions-container"></div>
+        <div style="text-align:center; margin-top: 50px;">
+            <button type="button" id="submitBtn" onclick="processAndSend(false)">Finalizar Test</button>
+        </div>
+    </form>
+</div>
+
+<div class="container" id="thanks-box">
+    <h2>¡Evaluación Finalizada!</h2>
+    <p style="color: #4a5568; font-size: 1.1rem;">Tus respuestas han sido registradas de manera segura.</p>
+    <p style="color: #718096;">El equipo de Recruiting revisará tu perfil y se pondrá en contacto contigo a la brevedad.</p>
+</div>
+
+<script>
+    // BANCO COMPLETO DE 20 PREGUNTAS BAJADAS DE LA DESCRIPCIÓN DE ROL FLUX
+    const questionBank = [
+        { id: 1, p: "1. Al iniciar un proyecto junto al Solution Architect, te encargás de instanciar la primera versión de la arquitectura (proyectos, repositorios, pipelines). ¿Cuál es la mejor práctica para asegurar que el entorno local de los Devs seniors sea idéntico al clúster de QA/Producción en AWS/GCP?", a: "Aislar la aplicación y sus dependencias (bases de datos, colas) usando Docker Compose o contenedores locales, parametrizando la infraestructura mediante variables de entorno en el pipeline de CI/CD.", b: "Hacer un empaquetado zip manual del entorno de desarrollo local y distribuirlo por correo a cada integrante senior.", c: "Exigir que todos los desarrolladores compilen directamente sobre el entorno de producción para evitar discrepancias.", correct: "A" },
+        { id: 2, p: "2. Al configurar un pipeline de CI/CD para una arquitectura que procesará un volumen masivo de datos transaccionales, ¿qué estrategia en el pipeline mitiga riesgos de performance antes del despliegue?", a: "Aumentar los límites de timeouts de las solicitudes HTTP en el servidor web de manera empírica.", b: "Integrar pruebas de carga automáticas y gating de rendimiento en un entorno espejo (Staging) que bloquee el merge si el throughput o latencia degradan las métricas base.", c: "Deshabilitar los tests automáticos para acelerar el tiempo de compilación y despliegue continuo.", correct: "B" },
+        { id: 3, p: "3. Si el backlog técnico incluye la migración continua y transformación de grandes volúmenes de datos hacia un entorno analítico, ¿qué ventaja técnica aporta un orquestador como Airflow o Dagster frente a scripts cron tradicionales?", a: "Permite modelar los flujos como DAGs (Gráficos Acíclicos Dirigidos), gestionando de forma nativa reintencionalidades, paralelismo, alertas y dependencias complejas entre tareas.", b: "Garantiza que el frontend cargue los datos un 50% más rápido reduciendo el bundle de JavaScript.", c: "Elimina la necesidad de utilizar motores de bases de datos relacionales para el procesamiento del data warehouse.", correct: "A" },
+        { id: 4, p: "4. El equipo debe desarrollar un sistema que requiere consistencia transaccional estricta para operaciones core (Java/Spring) pero alta velocidad y flexibilidad de esquema para logs y auditoría masiva. ¿Qué arquitectura de persistencia proponés?", a: "Guardar toda la telemetría transaccional dentro de archivos de texto planos compartidos en red.", b: "Un enfoque de Persistencia Políglota: base de datos relacional para el core transaccional y NoSQL (documental o clave-valor) para la capa de alta velocidad y volumen.", c: "Migrar la lógica de negocio completa hacia procedimientos almacenados en una sola base de datos relacional antigua.", correct: "B" },
+        { id: 5, p: "5. Diseñando un backend generalista en Node.js que consume microservicios externos inestables, ¿cómo implementás el patrón Circuit Breaker para proteger el ecosistema de la aplicación?", a: "Configurando un disyuntor que cambie a estado 'Abierto' tras un umbral de fallas, ejecutando una lógica de fallback inmediata y evitando saturar los hilos del servidor con timeouts.", b: "Forzando un reinicio automático de la máquina virtual cada vez que una llamada externa falle.", c: "Dejando que los hilos de ejecución sigan acumulándose de forma síncrona y sin límites temporales.", correct: "A" },
+        { id: 6, p: "6. Tenés un componente de negocio en Java que ejecuta diferentes validaciones técnicas complejas según el tipo de cliente. Para evitar bloques if/else masivos y respetar el principio Open/Closed (SOLID), ¿qué patrón aplicás?", a: "El patrón Singleton para centralizar toda la lógica en una única variable global mutable.", b: "El patrón Strategy, abstrayendo cada algoritmo de validación en clases independientes que implementan una interfaz común, inyectadas dinámicamente.", c: "El patrón Decorator para añadir condicionales en tiempo de ejecución de manera recursiva.", correct: "B" },
+        { id: 7, p: "7. Un desarrollador senior diseña una interfaz gigante en Java/Spring que obliga a los microservicios consumidores a implementar métodos que no necesitan. Como TL, ¿cuál es tu guía en el Code Review?", a: "Aceptar el diseño para agilizar los tiempos de desarrollo de la iteración actual.", b: "Refactorizar dividiendo la interfaz en múltiples interfaces más pequeñas y específicas, asegurando que ninguna clase dependa de métodos que no utiliza.", c: "Mover todos los métodos abstractos hacia una clase interna oculta con visibilidad privada.", correct: "B" },
+        { id: 8, p: "8. Debes acordar con el Project Leader (PL) cómo medir el éxito técnico del sprint. ¿Qué combinación de métricas de calidad y alcance técnico es la adecuada para un TL?", a: "Evaluar únicamente la cantidad de líneas de código escritas y el número de horas trabajadas por el equipo.", b: "Combinar cobertura de testing automático (Unit/Integration), densidad de defectos detectados por analizadores estáticos (como SonarQube) y reducción del lead time en Code Reviews.", c: "Medir el éxito basándose de forma exclusiva en el feedback subjetivo del cliente al final del ciclo.", correct: "B" },
+        { id: 9, p: "9. Al liderar las revisiones de código del equipo, ¿en qué debe enfocarse prioritariamente tu feedback para potenciar a los Devs Senior?", a: "En el diseño arquitectónico, cumplimiento de SOLID, cobertura de test, mantenibilidad y acoplamiento, automatizando el formato estético mediante Linters en el pre-commit.", b: "Exclusivamente en detalles estéticos como la indentación, el orden de los métodos y el uso de comillas simples.", c: "Modificar de forma directa las ramas del repositorio sin dejar comentarios para ahorrar tiempo de gestión.", correct: "A" },
+        { id: 10, p: "10. Para un ecosistema híbrido (Java/Node), ¿cuál es la diferencia crítica entre un Unit Test y un Integration Test al validar un pipeline de alto volumen?", a: "No hay diferencias de concepto; ambos ejecutan exactamente la misma lógica bajo entornos idénticos.", b: "El Unit Test valida la lógica de una función aislada con mocks; el Integration Test comprueba la comunicación real con la base de datos o servicios externos para asegurar la performance del flujo completo.", c: "El Integration Test se corre en local por el desarrollador y el Unit Test solo lo ejecuta el equipo de DevOps en producción.", correct: "B" },
+        { id: 11, p: "11. El Project Leader te avisa que el alcance del sprint corre riesgo por la complejidad imprevista de una tarea en el frontend (React/Angular). ¿Cómo reaccionas como TL?", a: "Exigir horas extras obligatorias al equipo para cubrir el desvío de agenda sin alterar el alcance.", b: "Evalúas el impacto, armas un Backlog Técnico de mitigación reduciendo la complejidad no crítica mediante un spike técnico, y presentás alternativas viables al cliente y al PL.", c: "Ocultar la situación al Project Leader hasta el día final de la entrega comercial.", correct: "B" },
+        { id: 12, p: "12. Un Dev Senior de tu equipo técnico demuestra un excelente nivel hands-on pero se resiste a adoptar tareas de ownership de calidad o documentación. ¿Cómo lo acompañas en su plan de carrera?", a: "Sancionarlo reduciendo sus tareas de código complejas y delegándole mantenimiento de infraestructura básica.", b: "Le asignás la responsabilidad de liderar el diseño de un módulo nuevo y coordinar su Code Review, guiándolo mediante sesiones de 1-on-1 sobre el impacto de la marca técnica.", c: "Asumir tú mismo todas sus responsabilidades de calidad técnica para evitar confrontaciones dentro del equipo.", correct: "B" },
+        { id: 13, p: "13. El negocio presiona por lanzar una feature sacrificando la calidad del código Node.js. ¿Cómo defendés la postura técnica ante el cliente?", a: "Aceptar las directivas del cliente sin documentar las consecuencias técnicas a largo plazo.", b: "Cuantificás el riesgo y el costo futuro de no resolverlo, registrando la Deuda Técnica en el Backlog con estimación de tiempos clara para acordar su resolución en el siguiente ciclo.", c: "Detener el desarrollo del proyecto por completo hasta que el cliente acepte las condiciones de ingeniería.", correct: "B" },
+        { id: 14, p: "14. Estás entrevistando a un candidato Dev/DevOps. Más allá de su experiencia en AWS/GCP, ¿qué factor clave buscas alineado a la cultura Flux?", a: "Que se especialice exclusivamente en un único framework y no tenga interés en comprender otras capas de software.", b: "Capacidad generalista para adaptarse a stacks híbridos (Java/Node), mentalidad de automatización continua y sólidas habilidades de comunicación para defender puntos de vista técnicos.", c: "Conocimientos avanzados en diseño de interfaces gráficas UX/UI exclusivamente.", correct: "B" },
+        { id: 15, p: "15. ¿Cuál es la ventaja de implementar Arquitectura Hexagonal cuando se trabaja con equipos que desarrollan tanto en Java/Spring como en Node.js?", a: "Elimina la necesidad de realizar pruebas automáticas unitarias en el backend de ambas tecnologías.", b: "Unifica el estándar de diseño: ambos stacks protegen el dominio en el centro, permitiendo que los cambios en adaptadores (Express, Spring MVC, JPA, Mongoose) no alteren las reglas de negocio.", c: "Permite compilar el frontend y el backend dentro del mismo ejecutable binario en la nube.", correct: "B" },
+        { id: 16, p: "16. Al supervisar la capa frontend opcional, un Senior reporta problemas de lentitud por renderizados masivos en un listado dinámico. ¿Qué directiva o técnica debió asegurar el equipo?", a: "Deshabilitar las hojas de estilos CSS del framework frontend para aliviar la carga de renderizado.", b: "El uso correcto de memorización (useMemo/React.memo o ChangeDetectionStrategy.OnPush en Angular) combinado con virtualización de listas virtuales para mitigar la sobrecarga del DOM.", c: "Reescribir la lógica del listado dinámico utilizando tablas HTML tradicionales sin control de estado.", correct: "B" },
+        { id: 17, p: "17. En una arquitectura distribuida nativa en la nube, ¿cómo evita el TL que los microservicios se conviertan en un 'monolito distribuido' altamente acoplado?", a: "Incrementando la cantidad de peticiones síncronas directas REST entre todos los controladores de la aplicación.", b: "Migrando la comunicación síncrona (peticiones HTTP directas) hacia una arquitectura orientada a eventos asíncronos (Event-Driven) con un broker intermedio.", c: "Centralizando la lógica de todos los servicios dentro de un único componente de configuración global en la nube.", correct: "B" },
+        { id: 18, p: "18. ¿Por qué es mandatorio incorporar analizadores estáticos de seguridad en el pipeline de CI/CD armado por el TL?", a: "Para bloquear de forma automática a los usuarios externos que intenten ingresar contraseñas incorrectas en producción.", b: "Para detectar vulnerabilidades conocidas en dependencias externas (OWASP Top 10) y malas prácticas de código (ej. secrets expuestos) antes de compilar el software.", c: "Para automatizar la generación del backlog de negocio del Project Leader.", correct: "B" },
+        { id: 19, p: "19. Ante una base de datos documental que experimenta degradación de throughput en GCP/AWS, ¿cuándo decidís escalarla horizontalmente (Sharding) en lugar de verticalmente?", a: "Cuando el Project Leader solicita una reducción del alcance del sprint por motivos presupuestarios.", b: "Cuando el hardware de la instancia principal llega a límites físicos de rendimiento/costo y el volumen de datos requiere distribuirse en múltiples nodos mediante una clave de partición.", c: "Cada vez que se añada un nuevo campo de tipo string dentro del esquema dinámico del documento.", correct: "B" },
+        { id: 20, p: "20. Durante una mesa técnica con los arquitectos del cliente, proponen una tecnología que incrementa drásticamente los riesgos de mantenimiento a largo plazo de la cuenta. ¿Cómo actúas?", a: "Ceder ante la postura del cliente de manera inmediata para evitar debates de ingeniería.", b: "Exponés una presentation técnica sólida basada en métricas, compensaciones (trade-offs) y riesgos de alcance, defendiendo de manera proactiva la estrategia técnica de la solución.", c: "Modificar los criterios de Code Review del equipo de manera unilateral para incorporar la tecnología sin avisar.", correct: "B" }
+    ];
+
+    // LÓGICA DE ROTACIÓN Y SELECCIÓN ALEATORIA DE 10 PREGUNTAS
+    function getRandomQuestions(bank, count) {
+        let shuffled = [...bank];
+        for (let i = shuffled.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+        }
+        return shuffled.slice(0, count);
+    }
+
+    const selectedQuestions = getRandomQuestions(questionBank, 10);
+    const container = document.getElementById('questions-container');
+    
+    selectedQuestions.forEach((item, index) => {
+        const visualIndex = index + 1;
+        const cleanText = item.p.replace(/^\d+\.\s*/, '');
+        
+        container.innerHTML += `
+            <div class="question" data-id="${item.id}" data-correct="${item.correct}">
+                <p>${visualIndex}. ${cleanText}</p>
+                <label><input type="radio" name="q${item.id}" value="A"> A) ${item.a}</label>
+                <label><input type="radio" name="q${item.id}" value="B"> B) ${item.b}</label>
+                <label><input type="radio" name="q${item.id}" value="C"> C) ${item.c}</label>
+            </div>
+        `;
+    });
+
+    // Temporizador de 15 minutos
+    let timeLimit = 15 * 60;
+    const timerDisplay = document.getElementById('time');
+    const timerInterval = setInterval(() => {
+        let minutes = Math.floor(timeLimit / 60);
+        let seconds = timeLimit % 60;
+        timerDisplay.innerText = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+        if (timeLimit <= 0) { clearInterval(timerInterval); processAndSend(true); }
+        timeLimit--;
+    }, 1000);
+
+    function processAndSend(isAuto) {
+        clearInterval(timerInterval);
+        let score = 0;
+        let details = [];
+        let unanswered = false;
+
+        selectedQuestions.forEach((item) => {
+            const selected = document.querySelector(`input[name="q${item.id}"]:checked`);
+            if (!selected && !isAuto) { unanswered = true; }
+            
+            let val = selected ? selected.value : "X";
+            details.push(`PreguntaID_${item.id}:${val}`);
+            if (val === item.correct) score++;
+        });
+
+        if (unanswered && !isAuto) { 
+            alert("Por favor responde todas las preguntas antes de finalizar."); 
+            return; 
+        }
+
+        let resultado = "Requiere Revisión Técnica";
+        if (score >= 9) resultado = "Aprobado Excelente";
+        else if (score >= 6) resultado = "Aprobado Sólido";
+
+        localStorage.setItem('test_realizado', 'true');
+
+        document.getElementById('form_nombre').value = localStorage.getItem('candidato_nombre');
+        document.getElementById('form_email').value = localStorage.getItem('candidato_email');
+        document.getElementById('form_tech').value = "Technical Leader - Rotative Assessment";
+        document.getElementById('form_score').value = `${score} / 10`;
+        document.getElementById('form_seniority').value = resultado;
+        document.getElementById('form_details').value = details.join(", ");
+
+        document.getElementById('timer-sticky').style.display = "none";
+        document.getElementById('main-container').style.display = "none";
+        document.getElementById('thanks-box').style.display = "block";
+
+        document.getElementById('hiddenRecruiterForm').submit();
+    }
+</script>
+</body>
+</html>
