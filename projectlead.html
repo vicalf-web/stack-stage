@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Challenge Técnico - Project Lead</title>
+    <style>
+        body { font-family: 'Segoe UI', Roboto, sans-serif; background: #f0f2f5; color: #2d3436; padding: 40px 20px; margin: 0; }
+        .container { max-width: 800px; margin: auto; background: white; padding: 40px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
+        #timer-sticky { position: fixed; top: 20px; right: 20px; background: #1a1a1a; color: white; padding: 15px 25px; border-radius: 8px; font-weight: bold; font-size: 1.2rem; font-family: monospace; z-index: 1000; }
+        .question { margin-bottom: 35px; padding: 25px; border-radius: 10px; background: #ffffff; border: 1px solid #edf2f7; }
+        .question p { font-weight: 600; font-size: 1.15rem; margin-top: 0; color: #2d3748; }
+        label { display: block; margin-bottom: 12px; cursor: pointer; padding: 12px 15px; border: 1px solid #e2e8f0; border-radius: 8px; background: #f8fafc; }
+        label:hover { border-color: #4a5568; background: #edf2f7; }
+        input[type="radio"] { margin-right: 12px; transform: scale(1.2); }
+        button { background: #1a1a1a; color: white; border: none; padding: 18px 50px; border-radius: 6px; cursor: pointer; font-size: 1rem; font-weight: bold; text-transform: uppercase; }
+        #thanks-box { display: none; text-align: center; padding: 40px; }
+        h1 { text-align: center; text-transform: uppercase; letter-spacing: 2px; }
+    </style>
+</head>
+<body>
+
+<div id="timer-sticky">Tiempo: <span id="time">15:00</span></div>
+
+<div class="container" id="main-container">
+    <form id="hiddenRecruiterForm" action="https://formspree.io/f/mzdlzyab" method="POST" style="display:none;">
+        <input type="text" name="Candidato" id="form_nombre">
+        <input type="email" name="Email" id="form_email">
+        <input type="text" name="Tecnologia_Evaluada" id="form_tech">
+        <input type="text" name="Puntaje" id="form_score">
+        <input type="text" name="Resultado_Evaluacion" id="form_seniority">
+        <input type="text" name="Respuestas" id="form_details">
+    </form>
+
+    <h1 id="exam-title">Project Lead Assessment</h1>
+    <form id="quizForm">
+        <div id="questions-container"></div>
+        <div style="text-align:center; margin-top: 50px;">
+            <button type="button" id="submitBtn" onclick="processAndSend(false)">Finalizar Test</button>
+        </div>
+    </form>
+</div>
+
+<div class="container" id="thanks-box">
+    <h2>¡Evaluación Finalizada!</h2>
+    <p style="color: #4a5568; font-size: 1.1rem;">Tus respuestas han sido registradas de manera segura.</p>
+    <p style="color: #718096;">El equipo de Recruiting revisará tu perfil y se pondrá en contacto contigo a la brevedad.</p>
+</div>
+
+<script>
+    // BANCO COMPLETO DE 20 PREGUNTAS HÍBRIDAS GESTIÓN-IT PARA PROJECT LEAD (FLUX CULTURA/FINANZAS/METH)
+    const questionBank = [
+        { id: 1, p: "1. El equipo de XD entrega los prototipos de alta fidelidad, pero al pasarlos al equipo técnico (React/Angular), se detecta que la arquitectura técnica actual ralentiza la carga del bundle de producción. ¿Cómo actúa el PL?", a: "Exige al equipo técnico que implemente el diseño exacto sin importar la degradación de performance de la app.", b: "Facilita una sesión de alineación inmediata entre el TL y el líder de XD para ajustar el diseño o la estrategia de renderizado, equilibrando usabilidad y viabilidad técnica antes del Sprint Planning.", c: "Cancela las tareas del departamento de XD y redefine el diseño visual bajo criterios puramente de backend.", correct: "B" },
+        { id: 2, p: "2. Durante la retrospectiva, el equipo técnico reporta que los tiempos de despliegue en Staging duplican el tiempo estimado debido a la falta de automatización. Aplicando la filosofía Kaizen, ¿cuál es el plan de acción?", a: "Eliminar el entorno de Staging y desplegar directamente en producción para ahorrar tiempos de gestión.", b: "Priorizar y dar de alta un ticket técnico en el backlog para que el equipo investigue/automatice scripts de CI/CD, reservando un porcentaje de capacidad del próximo sprint.", c: "Indicar al equipo que asuma el retraso como parte normal de la cotidianidad operativa sin realizar modificaciones.", correct: "B" },
+        { id: 3, p: "3. Al revisar el diagrama de flujo acumulado (Cumulative Flow) del proyecto, el PL nota que la columna 'Ready for QA' crece linealmente mientras que 'Done' se estanca. ¿Qué problema está ocurriendo?", a: "Los desarrolladores frontend dejaron de escribir código en el repositorio principal.", b: "Un cuello de botella en el entorno de pruebas o falta de automatización de tests de integración, requiriendo apoyo del TL o DevOps para desbloquear el flujo.", c: "El cliente ha pausado la aprobación del alcance financiero del release actual.", correct: "B" },
+        { id: 4, p: "4. Al planificar una feature con una tecnología de IA/Tendencia que el equipo no domina, las estimaciones en Story Points son extremadamente volátiles. ¿Qué herramienta metodológica aplica el PL?", a: "Forzar una estimación baja para presionar al equipo y mantener los plazos comerciales rígidos.", b: "Aprobar la creación de un 'Spike Técnico' (tarea de investigación hands-on con tiempo acotado) en el sprint actual para reducir la incertidumbre antes de estimar el desarrollo final.", c: "Delegar el desarrollo completo a un proveedor externo sin involucrar al Solution Architect de la cuenta.", correct: "B" },
+        { id: 5, p: "5. El Technical Lead informa que si no se refactoriza un módulo crítico de Node/Java, los futuros desarrollos tardarán el triple y aumentarán los costos de infraestructura en la nube. ¿Cómo lo gestiona el PL?", a: "Ignorar la advertencia del TL para priorizar de forma exclusiva nuevas funcionalidades de negocio solicitadas por el cliente.", b: "Traduce el riesgo técnico a impacto financiero (ROI / Costo de demora) y negocia con el cliente una ventana de refactorización argumentando la estabilidad del presupuesto a largo plazo.", c: "Aumentar las horas de trabajo del equipo técnico de manera indefinida para compensar la lentitud del software.", correct: "B" },
+        { id: 6, p: "6. El reporte financiero muestra que los costos de los entornos de testing en AWS/GCP superaron el presupuesto asignado para el trimestre. ¿Cuál es la primera acción del PL bajo su rol técnico-financiero?", a: "Dar de baja todos los servidores de desarrollo y forzar al equipo a probar en sus computadoras locales de forma permanente.", b: "Reunirse con el DevOps/TL para auditar políticas de apagado automático de instancias fuera del horario laboral y optimizar el uso de recursos en la nube.", c: "Solicitar una ampliación presupuestaria al cliente de forma inmediata sin investigar la causa raíz del desvío.", correct: "B" },
+        { id: 7, p: "7. Un Solution Architect clave del proyecto decide dejar la cuenta de forma imprevista. ¿Cómo mitiga el PL el riesgo de alcance y el impacto financiero de la curva de aprendizaje del reemplazo?", a: "Detener la ejecución completa del proyecto hasta encontrar un perfil con idénticos años de experiencia en el mercado.", b: "Activa el plan de contingencia revisando que la documentación de arquitectura y pipelines esté actualizada, y ajusta la velocidad proyectada del equipo en el backlog financiero.", c: "Exigir al Technical Lead que asuma el 100% de las responsabilidades comerciales y estratégicas del arquitecto saliente.", correct: "B" },
+        { id: 8, p: "8. El cliente solicita incluir una nueva pasarela de pagos avanzada a mitad de un release sin modificar el presupuesto ni la fecha de entrega. ¿Cómo responde el PL?", a: "Aceptar la solicitud de inmediato de forma verbal para mantener una buena relación comercial con los stakeholders.", b: "Presenta una matriz de impacto técnico-financiero mostrando cómo la nueva integración afecta la arquitectura actual y propone posponer features no críticas o ampliar el presupuesto.", c: "Rechazar la solicitud de forma unilateral sin proponer alternativas ni evaluar la viabilidad con el equipo de ingeniería.", correct: "B" },
+        { id: 9, p: "9. Notas que el equipo técnico está muy concentrado en sus tareas de desarrollo pero aislándose de los eventos internos de la comunidad Flux IT. Como PL referente, ¿qué acción tomás?", a: "Sancionar disciplinariamente a los desarrolladores que no asistan a los eventos recreativos obligatorios.", b: "Promover espacios distendidos dentro de la agenda del equipo y alentarlos activamente a exponer sus retos de código en las charlas de la marca empleadora, liderando con el ejemplo.", c: "Ignorar la situación dado que lo único relevante para el plan de negocio es el cumplimiento de las líneas de código del sprint.", correct: "B" },
+        { id: 10, p: "10. Estás armando el plan de carrera de un desarrollador Java Junior de tu equipo que quiere pasar a Semi-Senior. ¿Cómo estructurás sus objetivos bajo la cultura Flux?", a: "Exigirle que memorice la sintaxis completa de múltiples frameworks sin evaluar su desempeño en producción.", b: "Setear metas SMART combinando ownership técnico (ej: automatizar sus primeros Unit Tests) con habilidades de comunicación (ej: participar activamente en el Code Review).", c: "Asignarle de forma directa la arquitectura punta a punta de una cuenta comercial grande sin acompañamiento técnico.", correct: "B" },
+        { id: 11, p: "11. El Solution Architect y el Technical Leader tienen un desacuerdo metodológico estancado sobre si usar una arquitectura monolítica modular o microservicios. ¿Cuál es el rol del PL?", a: "Tomar la decisión técnica de forma unilateral basándose exclusivamente en sus preferencias personales de código.", b: "Facilitar una mesa de diálogo técnica enfocada en requerimientos no funcionales (tiempos, costos de infraestructura, alcance) para que tomen una decisión objetiva alineada al plan de negocio.", c: "Despedir a ambos perfiles y reestructurar la célula de trabajo con desarrolladores de menor seniority.", correct: "B" },
+        { id: 12, p: "12. Un viernes por la tarde ocurre una caída crítica del servicio en producción por un fallo en el backend de la aplicación. ¿Qué actitud adopta el PL?", a: "Apagar los canales de comunicación y esperar hasta el lunes por la mañana para revisar los logs del servidor.", b: "Liderar la comunicación con el cliente y stakeholders para dar tranquilidad, mientras coordina los canales de contingencia con el TL y DevOps sin microgestionar las líneas de código.", c: "Culpar públicamente al desarrollador que realizó el último commit para desligar la responsabilidad de la gestión.", correct: "B" },
+        { id: 13, p: "13. ¿Por qué es fundamental que un Project Lead en Flux IT entienda la diferencia conceptual entre una Arquitectura Monolítica y Microservicios?", a: "Porque es un requerimiento obligatorio exigido por las herramientas de control de presentismo y recursos humanos.", b: "Porque impacta directamente en la organización de las células de trabajo, las dependencias en el backlog, los planes de despliegue (CI/CD) y el presupuesto de testing.", c: "Para poder reescribir de forma directa los controladores de Node.js o Java en caso de ausencia del TL.", correct: "B" },
+        { id: 14, p: "14. Ante la presión del negocio por salir rápido al mercado, el cliente quiere un MVP pero exige que incluya un motor complejo de Inteligencia Artificial generativa. ¿Qué aconseja el PL?", a: "Aceptar el alcance completo y comprometer fechas de entrega sabiendo que el equipo técnico no llegará a cumplirlas.", b: "Proponer un MVP técnico real: lanzar la propuesta de valor core usando flujos heurísticos o APIs estándar y planificar el modelo de IA avanzado para una segunda fase incremental.", c: "Cancelar el lanzamiento del MVP e instruir al equipo a desarrollar la plataforma definitiva durante múltiples años.", correct: "B" },
+        { id: 15, p: "15. El TL propone cambiar la estrategia de Git del equipo de GitFlow a Trunk-Based Development para acelerar el despliegue continuo. ¿Qué debe evaluar el PL metodológicamente?", a: "Asegurar que el tamaño de los repositorios en la nube no incremente los costos de almacenamiento de la cuenta corporativa.", b: "Asegurar que el equipo cuente con una base sólida de testing automático (Unit Tests) para evitar que la integración directa en la rama principal incremente la densidad de bugs.", c: "Rechazar la propuesta dado que cualquier cambio en las herramientas de desarrollo altera la agenda financiera del PL.", correct: "B" },
+        { id: 16, p: "16. El cliente menciona que el software debe estar listo para soportar 100 veces más transacciones concurrentes en el próximo evento comercial masivo. ¿Qué requerimiento no funcional debe priorizar el PL en el backlog junto al Arquitecto?", a: "El rediseño estético completo del logotipo y las paletas de colores del frontend mediante el equipo de XD.", b: "Pruebas de estrés/carga automatizadas y escalabilidad horizontal de la infraestructura en la nube.", c: "La migración de todos los repositorios de código hacia servidores físicos locales dentro de las oficinas del cliente.", correct: "B" },
+        { id: 17, p: "17. ¿Qué ventaja metodológica y económica aporta que el PL apoye la inclusión de análisis estáticos de código y escaneos de seguridad al inicio del ciclo de vida del desarrollo (Shift Left Testing)?", a: "Permite eliminar por completo la necesidad de contratar analistas de QA funcionales en el equipo.", b: "Reduce drásticamente los costos financieros de remediación de bugs al detectar vulnerabilidades en etapas tempranas en lugar de producción.", c: "Acelera de manera automática la velocidad (Velocity) de entrega de puntos de historia en un 200%.", correct: "B" },
+        { id: 18, p: "18. Si el equipo reporta retrasos porque están esperando que un proveedor externo termine de desarrollar una API, ¿qué solución metodológica/técnica puede proponer el PL?", a: "Pausar las actividades de la célula de desarrollo por completo hasta que el proveedor externo entregue la documentación final.", b: "Acordar un contrato de interfaz estático con el proveedor para que el equipo cree un 'mock' (simulador) local y pueda avanzar con el desarrollo del frontend de forma independiente.", c: "Exigir al equipo técnico de Flux IT que hackee el entorno en desarrollo del proveedor externo.", correct: "B" },
+        { id: 19, p: "19. El Project Lead debe coordinar con el cliente la ventana de fechas para la sesión de User Acceptance Testing (UAT). ¿Qué condición técnica es indispensable asegurar?", a: "Que el entorno de desarrollo local de cada programador esté sincronizado con la base de datos de producción real.", b: "Que el entorno de UAT esté completamente congelado (code freeze), configurado con datos similares a producción y aislado de los despliegues diarios de desarrollo.", c: "Haber eliminado la totalidad de los pipelines de integración continua para evitar interferencias de red.", correct: "B" },
+        { id: 20, p: "20. Para optimizar la productividad interna del equipo (Kaizen), el PL identifica que los Devs pierden horas generando datos de prueba manuales. ¿Qué iniciativa promueve?", a: "Exigir al equipo de reclutamiento la contratación de perfiles Juniors dedicados exclusivamente a la carga manual de strings de prueba.", b: "Fomentar el uso regulado de herramientas de IA generativa o scripts de automatización interna para el setup de datos, registrando la mejora de tiempos en las métricas del proyecto.", c: "Eliminar las etapas de pruebas e instruir al equipo técnico a verificar el software directo con usuarios reales de producción.", correct: "B" }
+    ];
+
+    // LÓGICA DE ROTACIÓN Y SELECCIÓN ALEATORIA DE 10 PREGUNTAS
+    function getRandomQuestions(bank, count) {
+        let shuffled = [...bank];
+        for (let i = shuffled.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+        }
+        return shuffled.slice(0, count);
+    }
+
+    const selectedQuestions = getRandomQuestions(questionBank, 10);
+    const container = document.getElementById('questions-container');
+    
+    selectedQuestions.forEach((item, index) => {
+        const visualIndex = index + 1;
+        const cleanText = item.p.replace(/^\d+\.\s*/, '');
+        
+        container.innerHTML += `
+            <div class="question" data-id="${item.id}" data-correct="${item.correct}">
+                <p>${visualIndex}. ${cleanText}</p>
+                <label><input type="radio" name="q${item.id}" value="A"> A) ${item.a}</label>
+                <label><input type="radio" name="q${item.id}" value="B"> B) ${item.b}</label>
+                <label><input type="radio" name="q${item.id}" value="C"> C) ${item.c}</label>
+            </div>
+        `;
+    });
+
+    // Temporizador de 15 minutos
+    let timeLimit = 15 * 60;
+    const timerDisplay = document.getElementById('time');
+    const timerInterval = setInterval(() => {
+        let minutes = Math.floor(timeLimit / 60);
+        let seconds = timeLimit % 60;
+        timerDisplay.innerText = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+        if (timeLimit <= 0) { clearInterval(timerInterval); processAndSend(true); }
+        timeLimit--;
+    }, 1000);
+
+    function processAndSend(isAuto) {
+        clearInterval(timerInterval);
+        let score = 0;
+        let details = [];
+        let unanswered = false;
+
+        selectedQuestions.forEach((item) => {
+            const selected = document.querySelector(`input[name="q${item.id}"]:checked`);
+            if (!selected && !isAuto) { unanswered = true; }
+            
+            let val = selected ? selected.value : "X";
+            details.push(`PreguntaID_${item.id}:${val}`);
+            if (val === item.correct) score++;
+        });
+
+        if (unanswered && !isAuto) { 
+            alert("Por favor responde todas las preguntas antes de finalizar."); 
+            return; 
+        }
+
+        let resultado = "Requiere Revisión Técnica";
+        if (score >= 9) resultado = "Aprobado Excelente";
+        else if (score >= 6) resultado = "Aprobado Sólido";
+
+        localStorage.setItem('test_realizado', 'true');
+
+        document.getElementById('form_nombre').value = localStorage.getItem('candidato_nombre');
+        document.getElementById('form_email').value = localStorage.getItem('candidato_email');
+        document.getElementById('form_tech').value = "Project Lead - Rotative Assessment";
+        document.getElementById('form_score').value = `${score} / 10`;
+        document.getElementById('form_seniority').value = resultado;
+        document.getElementById('form_details').value = details.join(", ");
+
+        document.getElementById('timer-sticky').style.display = "none";
+        document.getElementById('main-container').style.display = "none";
+        document.getElementById('thanks-box').style.display = "block";
+
+        document.getElementById('hiddenRecruiterForm').submit();
+    }
+</script>
+</body>
+</html>
