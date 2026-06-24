@@ -49,6 +49,9 @@
                 <option value="react_jr">React Developer (Junior)</option>
                 <option value="react_ssr">React Developer (Semi-Senior)</option>
                 <option value="react_sr">React Developer (Senior)</option>
+                <option value="node_jr">Node.js Developer (Junior)</option>
+                <option value="node_ssr">Node.js Developer (Semi-Senior)</option>
+                <option value="node_sr">Node.js Developer (Senior)</option>
             </select>
         </div>
         
@@ -57,7 +60,7 @@
 </div>
 
 <script>
-    // SISTEMA DE SEGURIDAD ANTI-TRAMPA: Comprueba si ya hizo un examen
+    // SISTEMA DE SEGURIDAD: Comprueba si ya se hizo un examen
     window.onload = function() {
         if (localStorage.getItem('test_realizado') === 'true') {
             document.getElementById('startForm').style.display = 'none';
@@ -75,13 +78,10 @@
             return;
         }
         
-        // Guardamos los datos para arrastrarlos al examen
         localStorage.setItem('candidato_nombre', nombre);
         localStorage.setItem('candidato_email', email);
         
-        // Redirecciona al archivo correspondiente
-        if (tech.startsWith('java_') || tech.startsWith('react_')) {
-            // Nos lleva a java.html o react.html y le avisa qué nivel adentro
+        if (tech.startsWith('java_') || tech.startsWith('react_') || tech.startsWith('node_')) {
             localStorage.setItem('nivel_elegido', tech);
             window.location.href = tech.split('_')[0] + ".html"; 
         } else if (tech === 'powerbi') {
