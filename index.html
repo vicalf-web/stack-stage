@@ -5,58 +5,70 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Portal de Evaluaciones Técnicas</title>
     <style>
-        body { font-family: 'Segoe UI', Roboto, sans-serif; background: #f0f2f5; color: #2d3436; padding: 40px 20px; margin: 0; }
-        .container { max-width: 600px; margin: auto; background: white; padding: 40px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
-        h1 { text-align: center; color: #1a1a1a; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 30px; font-size: 1.8rem; }
-        .form-group { margin-bottom: 20px; }
+        body { font-family: 'Segoe UI', Roboto, sans-serif; background: #f0f2f5; color: #2d3436; margin: 0; padding: 40px 20px; }
+        .container { max-width: 550px; margin: auto; background: white; padding: 40px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
+        h1 { text-align: center; font-size: 1.8rem; text-transform: uppercase; letter-spacing: 1px; color: #1a1a1a; margin-bottom: 30px; }
+        .form-group { margin-bottom: 22px; }
         label { display: block; font-weight: 600; margin-bottom: 8px; color: #4a5568; }
-        input[type="text"], input[type="email"], select { width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 6px; box-sizing: border-box; font-size: 1rem; }
-        button { width: 100%; background: #1a1a1a; color: white; border: none; padding: 15px; border-radius: 6px; cursor: pointer; font-size: 1rem; font-weight: bold; text-transform: uppercase; margin-top: 10px; }
+        input[type="text"], input[type="email"], select { width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 6px; box-sizing: border-box; font-size: 1rem; background: #f8fafc; }
+        input:focus, select:focus { outline: none; border-color: #1a1a1a; background: #fff; }
+        button { width: 100%; background: #1a1a1a; color: white; border: none; padding: 15px; border-radius: 6px; cursor: pointer; font-size: 1rem; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; margin-top: 10px; }
         button:hover { background: #333; }
-        .blocked { text-align: center; color: #e74c3c; display: none; }
+        #blocked-msg { display: none; text-align: center; padding: 30px 10px; }
+        .alert-box { background: #fff5f5; color: #c53030; border: 1px solid #fed7d7; padding: 15px; border-radius: 6px; font-weight: 500; }
     </style>
 </head>
 <body>
 
-<div class="container" id="main-box">
-    <h1>Tech Assessment Hub</h1>
+<div class="container" id="startForm">
+    <h1>Portal de Admisión Técnica</h1>
     
-    <div id="blocked-msg" class="blocked">
-        <h2>⚠️ Acceso Denegado</h2>
-        <p>Ya has realizado un intento de evaluación en este dispositivo.</p>
-        <p style="color:#718096; font-size:0.9rem;">Si tuviste un problema técnico, por favor contacta a tu recruiter.</p>
+    <div class="form-group">
+        <label for="nombre">Nombre Completo:</label>
+        <input type="text" id="nombre" placeholder="Ej: Juan Pérez">
     </div>
 
-    <form id="startForm">
-        <div class="form-group">
-            <label for="nombre">Nombre y Apellido del Candidato</label>
-            <input type="text" id="nombre" required placeholder="Ej. Juan Pérez">
-        </div>
-        
-        <div class="form-group">
-            <label for="email">Correo Electrónico</label>
-            <input type="email" id="email" required placeholder="juan.perez@email.com">
-        </div>
-        
-        <div class="form-group">
-            <label for="tech">Tecnología y Nivel a Evaluar</label>
-            <select id="tech" required>
-                <option value="">-- Selecciona una opción --</option>
-                <option value="powerbi">Power BI / Data Analyst (Ssr)</option>
-                <option value="java_jr">Java Developer (Junior)</option>
-                <option value="java_ssr">Java Developer (Semi-Senior)</option>
-                <option value="java_sr">Java Developer (Senior)</option>
-                <option value="react_jr">React Developer (Junior)</option>
-                <option value="react_ssr">React Developer (Semi-Senior)</option>
-                <option value="react_sr">React Developer (Senior)</option>
-                <option value="node_jr">Node.js Developer (Junior)</option>
-                <option value="node_ssr">Node.js Developer (Semi-Senior)</option>
-                <option value="node_sr">Node.js Developer (Senior)</option>
-            </select>
-        </div>
-        
-        <button type="button" onclick="irAlChallenge()">Comenzar Desafío</button>
-    </form>
+    <div class="form-group">
+        <label for="email">Correo Electrónico:</label>
+        <input type="email" id="email" placeholder="ejemplo@correo.com">
+    </div>
+
+    <div class="form-group">
+        <label for="tech">Tecnología / Rol a Evaluar:</label>
+        <select id="tech" onchange="checkTechRequirements()">
+            <option value="">-- Seleccione una opción --</option>
+            <option value="java">Java Developer</option>
+            <option value="react">React Developer</option>
+            <option value="node">Node.js Developer</option>
+            <option value="angular">Angular Developer</option>
+            <option value="android">Android Developer</option>
+            <option value="ios">iOS Developer</option>
+            <option value="python">Python Developer</option>
+            <option value="powerbi">PowerBI Specialist</option>
+            <option value="architect">Solution Architect</option>
+            <option value="techlead">Technical Lead</option>
+            <option value="projectlead">Project Lead</option>
+        </select>
+    </div>
+
+    <div class="form-group" id="seniority-container">
+        <label for="level">Seniority Postulado:</label>
+        <select id="level">
+            <option value="jr">Junior (Jr)</option>
+            <option value="ssr">Semi-Senior (Ssr)</option>
+            <option value="sr">Senior (Sr)</option>
+        </select>
+    </div>
+
+    <button type="button" onclick="irAlChallenge()">Iniciar Evaluación</button>
+</div>
+
+<div class="container" id="blocked-msg">
+    <div class="alert-box">
+        <h3>Acceso Restringido</h3>
+        <p>Detectamos que ya has realizado o iniciado una evaluación técnica recientemente desde este navegador.</p>
+        <p style="font-size: 0.9rem; margin-top: 15px; color: #718096;">Si experimentaste un problema técnico, contactá directamente a tu selector de Recruiting.</p>
+    </div>
 </div>
 
 <script>
@@ -68,29 +80,43 @@
         }
     }
 
-    function irAlChallenge() {
-        const nombre = document.getElementById('nombre').value;
-        const email = document.getElementById('email').value;
+    // Oculta dinámicamente el selector de nivel si el rol es jerárquico
+    function checkTechRequirements() {
         const tech = document.getElementById('tech').value;
+        const seniorityContainer = document.getElementById('seniority-container');
         
-        if(!nombre || !email || !tech) {
-            alert("Por favor, completa todos los campos.");
+        if (tech === 'architect' || tech === 'techlead' || tech === 'projectlead') {
+            seniorityContainer.style.display = 'none';
+        } else {
+            seniorityContainer.style.display = 'block';
+        }
+    }
+
+    function irAlChallenge() {
+        const nombre = document.getElementById('nombre').value.trim();
+        const email = document.getElementById('email').value.trim();
+        const tech = document.getElementById('tech').value;
+        const level = document.getElementById('level').value;
+
+        if (!nombre || !email || !tech) {
+            alert("Por favor, completa todos los campos requeridos.");
             return;
         }
-        
+
+        // Guardar metadatos del candidato de forma persistente temporal
         localStorage.setItem('candidato_nombre', nombre);
         localStorage.setItem('candidato_email', email);
-        
-        if (tech.startsWith('java_') || tech.startsWith('react_') || tech.startsWith('node_')) {
+
+        // Lógica de ruteo inteligente según la selección
+        if (tech === 'architect' || tech === 'techlead' || tech === 'projectlead' || tech === 'powerbi') {
             localStorage.setItem('nivel_elegido', tech);
-            window.location.href = tech.split('_')[0] + ".html"; 
-        } else if (tech === 'powerbi') {
-            window.location.href = "powerbi.html";
+            window.location.href = `${tech}.html`;
         } else {
-            alert("Esta batería de test está siendo configurada.");
+            // Ruteo dinámico para perfiles con niveles (Java, React, Node, Angular, Android, iOS, Python)
+            localStorage.setItem('nivel_elegido', `${tech}_${level}`);
+            window.location.href = `${tech}.html`;
         }
     }
 </script>
-
 </body>
 </html>
