@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Challenge Técnico - Angular</title>
+    <style>
+        body { font-family: 'Segoe UI', Roboto, sans-serif; background: #f0f2f5; color: #2d3436; padding: 40px 20px; margin: 0; }
+        .container { max-width: 800px; margin: auto; background: white; padding: 40px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
+        #timer-sticky { position: fixed; top: 20px; right: 20px; background: #1a1a1a; color: white; padding: 15px 25px; border-radius: 8px; font-weight: bold; font-size: 1.2rem; font-family: monospace; z-index: 1000; }
+        .question { margin-bottom: 35px; padding: 25px; border-radius: 10px; background: #ffffff; border: 1px solid #edf2f7; }
+        .question p { font-weight: 600; font-size: 1.15rem; margin-top: 0; color: #2d3748; }
+        label { display: block; margin-bottom: 12px; cursor: pointer; padding: 12px 15px; border: 1px solid #e2e8f0; border-radius: 8px; background: #f8fafc; }
+        label:hover { border-color: #4a5568; background: #edf2f7; }
+        input[type="radio"] { margin-right: 12px; transform: scale(1.2); }
+        button { background: #1a1a1a; color: white; border: none; padding: 18px 50px; border-radius: 6px; cursor: pointer; font-size: 1rem; font-weight: bold; text-transform: uppercase; }
+        #thanks-box { display: none; text-align: center; padding: 40px; }
+        h1 { text-align: center; text-transform: uppercase; letter-spacing: 2px; }
+    </style>
+</head>
+<body>
+
+<div id="timer-sticky">Tiempo: <span id="time">15:00</span></div>
+
+<div class="container" id="main-container">
+    <form id="hiddenRecruiterForm" action="https://formspree.io/f/mzdlzyab" method="POST" style="display:none;">
+        <input type="text" name="Candidato" id="form_nombre">
+        <input type="email" name="Email" id="form_email">
+        <input type="text" name="Tecnologia_Evaluada" id="form_tech">
+        <input type="text" name="Puntaje" id="form_score">
+        <input type="text" name="Seniority_Calculado" id="form_seniority">
+        <input type="text" name="Respuestas" id="form_details">
+    </form>
+
+    <h1 id="exam-title">Cargando Examen...</h1>
+    <form id="quizForm">
+        <div id="questions-container"></div>
+        <div style="text-align:center; margin-top: 50px;">
+            <button type="button" id="submitBtn" onclick="processAndSend(false)">Finalizar Test</button>
+        </div>
+    </form>
+</div>
+
+<div class="container" id="thanks-box">
+    <h2>¡Evaluación Finalizada!</h2>
+    <p style="color: #4a5568; font-size: 1.1rem;">Tus respuestas han sido registradas de manera segura.</p>
+    <p style="color: #718096;">El equipo de Recruiting revisará tu perfil y se pondrá en contacto contigo a la brevedad.</p>
+</div>
+
+<script>
+    const examDatabase = {
+        angular_jr: {
+            title: "Angular Developer - Junior Assessment",
+            questions: [
+                { id: 1, p: "1. ¿Cuál es la diferencia principal entre las directivas *ngIf y [hidden]?", a: "*ngIf solo funciona con variables booleanas y [hidden] con strings.", b: "*ngIf destruye o crea el elemento en el DOM real; [hidden] solo cambia la propiedad CSS display de forma visual.", c: "No hay diferencia de rendimiento ni de estructura en el DOM.", correct: "B" },
+                { id: 2, p: "2. ¿Para qué sirve el decorador @Input() en un componente de Angular?", a: "Para capturar eventos del teclado del usuario de forma global.", b: "Para permitir que un componente hijo reciba datos desde su componente padre.", c: "Para inyectar un servicio directamente en el archivo CSS.", correct: "B" },
+                { id: 3, p: "3. ¿Qué comando de la CLI de Angular utilizarías para generar un nuevo servicio aislado de forma correcta?", a: "ng new service mi-servicio", b: "ng generate service mi-servicio", c: "npm install mi-servicio", correct: "B" },
+                { id: 4, p: "4. ¿Para qué se utiliza la directiva [(ngModel)] en Angular?", a: "Para enlazar estilos CSS de forma dinámica.", b: "Para implementar enlace de datos bidireccional (Two-way data binding) en elementos de formulario.", c: "Para destruir componentes de forma controlada.", correct: "B" },
+                { id: 5, p: "5. ¿Qué es un 'Componente' en la arquitectura de Angular?", a: "Un archivo de configuración de Node.js.", b: "La pieza fundamental de la UI que combina una plantilla HTML, estilos CSS y lógica en TypeScript.", c: "Una base de datos relacional interna para guardar sesiones.", correct: "B" },
+                { id: 6, p: "6. ¿Qué función cumple el archivo angular.json en un proyecto?", a: "Guardar las contraseñas de producción de los desarrolladores.", b: "Contener la configuración global del espacio de trabajo y del build de la CLI de Angular.", c: "Almacenar la lógica de negocio del componente principal.", correct: "B" },
+                { id: 7, p: "7. ¿Cuál es el propósito del operador pipe ( | ) en las plantillas HTML de Angular?", a: "Conectar la aplicación a una base de datos externa.", b: "Transformar visualmente los datos en la vista sin alterar su valor en el componente (ej: date, uppercase).", c: "Detener la ejecución de scripts maliciosos.", correct: "B" },
+                { id: 8, p: "8. ¿Como se manejan los eventos del DOM (como un clic en un botón) en una plantilla de Angular?", a: "Utilizando la sintaxis onclick tradicional de JavaScript nativo.", b: "Encerrando el evento entre paréntesis, por ejemplo: (click)='miMetodo()'.", c: "Escribiendo la lógica completa en un bloque de script dentro del HTML.", correct: "B" },
+                { id: 9, p: "9. ¿Qué lenguaje de programación se utiliza de forma estándar para escribir la lógica en Angular?", a: "Python avanzado.", b: "TypeScript (un superset de JavaScript con tipado estático).", c: "PHP orientado a objetos.", correct: "B" },
+                { id: 10, p: "10. ¿Cuál es la función de la interpolación {{ }} en las plantillas de Angular?", a: "Ejecutar consultas directas SQL desde la interfaz.", b: "Desplegar el valor de una variable del componente TypeScript directamente en el HTML.", c: "Definir comentarios que no serán leídos por el navegador.", correct: "B" },
+                { id: 11, p: "11. ¿Qué comando se utiliza para levantar un servidor de desarrollo local para probar la aplicación Angular?", a: "ng build --prod", b: "ng serve", c: "ng test --headless", correct: "B" },
+                { id: 12, p: "12. ¿Cuál es el decorador obligatorio que define que una clase de TypeScript es un componente de Angular?", a: "@Injectable()", b: "@Component()", c: "@NgModule()", correct: "B" },
+                { id: 13, p: "13. ¿Para qué sirve el archivo package.json en un proyecto de Angular?", a: "Para estructurar las rutas y subrutas de la aplicación.", b: "Para registrar las dependencias, librerías de terceros y comandos de ejecución de Node/NPM.", c: "Para configurar las llaves de acceso a Firebase.", correct: "B" },
+                { id: 14, p: "14. ¿Qué directiva estructural utilizarías para iterar una lista de elementos y mostrarlos en el HTML?", a: "*ngIf", b: "*ngFor", c: "[ngClass]", correct: "B" },
+                { id: 15, p: "15. ¿Qué utilidad tiene el decorador @Output() en la comunicación de componentes?", a: "Recibir parámetros desde la URL de navegación.", b: "Permitir que un componente hijo envíe datos o notificaciones a su componente padre mediante un EventEmitter.", c: "Exportar el componente para pruebas unitarias de software.", correct: "B" },
+                { id: 16, p: "16. ¿Qué carpeta contiene los archivos ya compilados listos para subir a producción luego de correr ng build?", a: "src/app", b: "dist/", c: "node_modules/", correct: "B" },
+                { id: 17, p: "17. ¿Qué función cumple la directiva [ngStyle] en Angular?", a: "Cambiar la estructura semántica de las etiquetas del DOM.", b: "Aplicar propiedades de estilos CSS de forma dinámica basadas en variables de TypeScript.", c: "Cargar una biblioteca externa de fuentes web.", correct: "B" },
+                { id: 18, p: "18. ¿Cuál es la función de los archivos con extensión .spec.ts en un proyecto?", a: "Definir los estilos globales con preprocesadores SASS.", b: "Contener las pruebas unitarias (tests) del componente o servicio asociado.", c: "Almacenar las traducciones multi-idioma de la interfaz.", correct: "B" },
+                { id: 19, p: "19. ¿Dónde se inyectan las dependencias (como servicios) dentro de una clase de componente en Angular?", a: "En el método ngOnInit().", b: "En los parámetros del constructor de la clase.", c: "Dentro del arreglo de imports del archivo HTML.", correct: "B" },
+                { id: 20, p: "20. ¿Qué significa SPA en el contexto de desarrollo web moderno con Angular?", a: "Secure Protocol Application.", b: "Single Page Application (Aplicación de una Sola Página que no recarga todo el navegador al navegar).", c: "Server Processing Architecture.", correct: "B" }
+            ]
+        },
+        angular_ssr: {
+            title: "Angular Developer - Semi-Senior Assessment",
+            questions: [
+                { id: 1, p: "1. ¿Cuál es la diferencia clave entre los Formularios Reactivos (Reactive Forms) y los Formularios Basados en Plantillas (Template-driven)?", a: "Los basados en plantillas son más seguros y escalables para aplicaciones de gran envergadura.", b: "Los Reactivos se gestionan desde el código TypeScript dando control total, inmutabilidad y facilidades de testing; los de Plantilla dependen de directivas en el HTML.", c: "Los Formularios Reactivos no permiten validaciones asíncronas.", correct: "B" },
+                { id: 2, p: "2. ¿Qué operador de RxJS elegirías si necesitás cancelar las peticiones HTTP anteriores y quedarte solo con la última respuesta en un buscador en tiempo real?", a: "mergeMap", b: "switchMap", c: "concatMap", correct: "B" },
+                { id: 3, p: "3. ¿En qué método del ciclo de vida (Lifecycle Hook) se recomienda realizar las llamadas iniciales a las APIs externas?", a: "ngOnChanges", b: "ngOnInit", c: "ngAfterViewInit", correct: "B" },
+                { id: 4, p: "4. ¿Qué significa que un servicio tenga la propiedad providedIn: 'root' en su decorador @Injectable()?", a: "Que solo se puede usar en el componente principal AppComponent.", b: "Que el servicio es un Singleton global disponible en toda la aplicación y permite la optimización por Tree-Shaking.", c: "Que requiere ser importado manualmente en los providers de cada componente de forma obligatoria.", correct: "B" },
+                { id: 5, p: "5. ¿Para qué sirve un 'Route Guard' en el sistema de enrutamiento de Angular?", a: "Para encriptar las respuestas JSON que viajan por el canal de red.", b: "Para controlar el acceso a ciertas rutas basándose en condiciones lógicas (como si el usuario está autenticado).", c: "Para acelerar la velocidad de carga de las imágenes pesadas.", correct: "B" },
+                { id: 6, p: "6. ¿Cuál es el propósito principal de utilizar un 'Interceptor' de HTTP (HttpInterceptor)?", a: "Renderizar vistas personalizadas en caso de errores de diseño CSS.", b: "Capturar y modificar las peticiones o respuestas HTTP de forma global (ej: añadir tokens de autenticación o manejar errores 401).", c: "Reemplazar el uso de los servicios de enrutamiento tradicionales.", correct: "B" },
+                { id: 7, p: "7. ¿Qué diferencia fundamental hay entre un Subject y un BehaviorSubject en RxJS?", a: "El Subject mantiene un historial completo de todas las emisiones del pasado.", b: "El BehaviorSubject requiere un valor inicial y siempre emite el último valor guardado a los nuevos suscriptores de forma inmediata.", c: "El Subject no permite que los componentes TypeScript se suscriban de forma asíncrona.", correct: "B" },
+                { id: 8, p: "8. ¿Para qué se utiliza la estrategia de compilación AOT (Ahead-of-Time) en Angular?", a: "Para compilar el código del servidor en tiempo de ejecución mientras el usuario navega.", b: "Para compilar las plantillas e inyectar optimizaciones durante el proceso de build, antes de que el navegador descargue la app.", c: "Para traducir la aplicación de forma automática a múltiples idiomas.", correct: "B" },
+                { id: 9, p: "9. Al trabajar con ViewChild, ¿qué estás intentando acceder desde el componente TypeScript?", a: "Las variables de sesión guardadas de forma segura en la base de datos.", b: "Una referencia directa a un elemento del DOM o a un componente hijo definido en la plantilla HTML.", c: "Las credenciales de configuración de la cuenta en la nube de AWS o GCP.", correct: "B" },
+                { id: 10, p: "10. ¿Cuál es el beneficio de utilizar la directiva estructural NgFor con la función 'trackBy' al renderizar listas dinámicas masivas?", a: "Elimina de la memoria caché las peticiones HTTP que dieron error.", b: "Optimiza el rendimiento permitiendo que Angular identifique qué elementos cambiaron reales y evite re-renderizar la lista completa en el DOM.", c: "Transforma los strings de la lista a números enteros de forma automática.", correct: "B" },
+                { id: 11, p: "11. ¿Qué diferencia principal hay entre usar ngOnChanges() y ngOnInit()?", a: "ngOnInit se ejecuta cada vez que cambia una propiedad de entrada; ngOnChanges solo una vez.", b: "ngOnChanges se ejecuta cuando cambian las propiedades vinculadas a @Input(); ngOnInit se ejecuta una única vez tras inicializar el componente.", c: "ngOnInit solo funciona en servicios compartidos.", correct: "B" },
+                { id: 12, p: "12. ¿Qué operador de RxJS usarías para transformar los datos emitidos por un observable antes de que lleguen a la suscripción de la vista?", a: "filter", b: "map", c: "tap", correct: "B" },
+                { id: 13, p: "13. ¿Qué es un módulo compartido (SharedModule) en esquemas de Angular tradicionales?", a: "Un servidor proxy para balancear peticiones HTTP.", b: "Un módulo donde se agrupan componentes puros, directivas y pipes comunes para ser importados por múltiples feature modules.", c: "Un archivo de configuración exclusivo para bases de datos NoSQL.", correct: "B" },
+                { id: 14, p: "14. ¿Cuál es el ciclo de vida adecuado para manipular directamente elementos del DOM a través de referencias seguras?", a: "ngOnInit", b: "ngAfterViewInit", c: "ngOnDestroy", correct: "B" },
+                { id: 15, p: "15. ¿Cómo se define un parámetro dinámico en el archivo de configuración de rutas de Angular?", a: "path: 'perfil/dynamic_id'", b: "path: 'perfil/:id'", c: "path: 'perfil?id'", correct: "B" },
+                { id: 16, p: "16. ¿Qué función cumple el operador debounceTime en un flujo de RxJS vinculado a un input de búsqueda?", a: "Encriptar el término ingresado para protegerlo en la red.", b: "Retrasar la emisión de valores del observable hasta que pase un tiempo determinado sin nuevas entradas, evitando peticiones API duplicadas.", c: "Forzar la recarga automática del componente.", correct: "B" },
+                { id: 17, p: "17. ¿Para qué sirve usar la tubería async (async pipe) en la plantilla HTML de un componente?", a: "Para forzar la renderización síncrona de estilos CSS pesados.", b: "Para suscribirse de manera automática a un Observable o Promesa y manejar la desuscripción al destruir el componente.", c: "Para acelerar la conexión vía WebSockets.", correct: "B" },
+                { id: 18, p: "18. ¿Cómo implementás una validación personalizada (Custom Validator) en un Formulario Reactivo?", a: "Modificando las etiquetas del HTML e inyectando scripts manuales.", b: "Creando una función pura que reciba un AbstractControl y retorne un objeto de error si la validación falla o null si es correcta.", c: "Usando una directiva de estilo inline obligatoriamente.", correct: "B" },
+                { id: 19, p: "19. ¿Cuál es el propósito del archivo environment.ts en Angular?", a: "Configurar el tamaño de la memoria del servidor de NodeJS.", b: "Almacenar variables de configuración específicas del entorno (como las URLs base de las APIs para Dev, Staging o Prod).", c: "Controlar el uso de extensiones de Git en el repositorio.", correct: "B" },
+                { id: 20, p: "20. Si un componente emite datos con un EventEmitter, ¿cómo escucha el padre esa emisión en su plantilla HTML?", a: "Usando la sintaxis de property binding tradicional [miEvento].", b: "Usando la sintaxis de event binding tradicional (miEvento)='manejarDatos($event)'.", c: "Inyectando un servicio interceptor de eventos en el módulo principal.", correct: "B" }
+            ]
+        },
+        angular_sr: {
+            title: "Angular Developer - Senior Assessment",
+            questions: [
+                { id: 1, p: "1. Para optimizar el rendimiento de renderizado en una aplicación empresarial masiva, ¿qué estrategia de detección de cambios (Change Detection) deberías priorizar en componentes puros?", a: "ChangeDetectionStrategy.Default para que Angular revise constantemente todo el árbol.", b: "ChangeDetectionStrategy.OnPush para que el componente se renderice solo si cambian sus @Input (referencia) o emite un evento interno.", c: "Deshabilitar por completo la zona de Angular (NgZone) mediante scripts manuales en el index.", correct: "B" },
+                { id: 2, p: "2. ¿Qué problema de arquitectura y rendimiento soluciona la implementación de 'Lazy Loading' (Carga Perezosa) en el sistema de rutas?", a: "Evita que la base de datos relacional colapse por exceso de conexiones concurrentes.", b: "Divide la aplicación en módulos o componentes independientes, descargando en el navegador del usuario solo el código necesario para la pantalla actual.", c: "Cifra las URLs públicas de la aplicación para mitigar ataques de inyección de scripts.", correct: "B" },
+                { id: 3, p: "3. Trabajando con arquitecturas modernas de Angular (versiones 16+), ¿qué ventaja técnica aporta el uso de 'Signals' en comparación con los observables tradicionales de RxJS para el manejo del estado local?", a: "Las Signals eliminan la necesidad de utilizar archivos TypeScript en los componentes.", b: "Aportan reactividad fina (fine-grained reactivity), actualizando únicamente la parte exacta del DOM afectada sin necesidad de ejecutar algoritmos pesados de comparación en todo el componente.", c: "Son exclusivas para conexiones por WebSockets en tiempo real.", correct: "B" },
+                { id: 4, p: "4. En una arquitectura escalable de Angular con NgRx, ¿cuál es el rol estricto de los 'Selectors'?", a: "Modificar el estado global realizando operaciones asíncronas directas contra la API de backend.", b: "Funcionar como funciones puras para obtener, filtrar y escuchar porciones específicas del estado desde el Store de manera optimizada y con memoización.", c: "Interceptar los errores de red y redirigir al usuario a la pantalla de login de forma automática.", correct: "B" },
+                { id: 5, p: "5. ¿Qué implicancia tiene el uso de Zone.js en Angular y cómo impacta el desarrollo de aplicaciones 'Zone-less'?", a: "Zone.js se encarga de la encriptación de datos; quitarlo acelera los tiempos de compilación de CSS.", b: "Zone.js intercepta las tareas asíncronas para disparar la detección de cambios global; compilar Zone-less reduce el bundle y optimiza el rendimiento apoyándose en Signals.", c: "Zone-less deshabilita de manera permanente el sistema de rutas de la aplicación.", correct: "B" },
+                { id: 6, p: "6. Diseñando una aplicación de microfrontends con Angular, ¿qué tecnología o patrón del ecosistema de bundlers permite cargar módulos compilados de forma independiente en tiempo de ejecución?", a: "Server-Side Rendering (SSR) exclusivo con NodeJS.", b: "Module Federation (Webpack / Rspack) configurando contenedores remotos y hosts compartidos.", c: "Compilación diferencial dividiendo archivos políglotas tradicionales.", correct: "B" },
+                { id: 7, p: "7. ¿Qué riesgo de seguridad previene el uso nativo de DomSanitizer en Angular al renderizar contenido HTML dinámico provisto por usuarios?", a: "Ataques de denegación de servicio distribuidos (DDoS) del lado del cliente.", b: "Vulnerabilidades de Cross-Site Scripting (XSS), sanitizando valores potencialmente peligrosos antes de insertarlos en el DOM.", c: "Fugas de memoria RAM causadas por observables que no fueron desuscritos a tiempo.", correct: "B" },
+                { id: 8, p: "8. Con respecto a la hidratación no destructiva (Non-destructive Hydration) introducida en las últimas versiones para SSR, ¿cuál es su beneficio técnico?", a: "Elimina los archivos JavaScript de producción antes de enviarlos al cliente.", b: "Reutiliza la estructura DOM existente generada por el servidor en lugar de destruir y recrear los elementos desde cero, eliminando el parpadeo (flickering).", c: "Aumenta la capacidad de almacenamiento de LocalStorage de manera virtual.", correct: "B" },
+                { id: 9, p: "9. ¿Cómo solucionás una fuga de memoria (Memory Leak) provocada por una suscripción manual e infinita a un observable dentro de un componente?", a: "Reiniciando el servidor de Node de forma periódica mediante un script cron.", b: "Utilizando el operador takeUntilDestroyed() o desuscribiéndose explíclitamente en el ciclo de vida ngOnDestroy.", c: "Cambiando el tipo de dato del observable a una variable primitiva estándar.", correct: "B" },
+                { id: 10, p: "10. ¿Cuál es el propósito del compilador Ivy en las versiones modernas de Angular con respecto al tamaño del bundle de producción?", a: "Duplicar las capas de abstracción para hacer el código más seguro en la red pública.", b: "Generar código mucho más limpio y modularizado que permite al Tree-Shaking eliminar funciones del framework no utilizadas, reduciendo drásticamente el peso de la app.", c: "Permitir la ejecución nativa de bases de datos relacionales SQLite dentro del motor del navegador.", correct: "B" },
+                { id: 11, p: "11. En NgRx, ¿cuál es el propósito fundamental de los Effects?", a: "Renderizar animaciones complejas en la interfaz de usuario.", b: "Manejar operaciones asíncronas y efectos colaterales (como llamadas a APIs) de forma aislada, mapeando los resultados de vuelta a nuevas Actions.", c: "Modificar de forma síncrona y directa las propiedades inmutables del Store.", correct: "B" },
+                { id: 12, p: "12. ¿Cuál es el impacto técnico de implementar Standalone Components (introducidos en Angular 14+) en la arquitectura de la app?", a: "Obligan al uso de arquitecturas basadas exclusivamente en clases abstractas.", b: "Reducen la necesidad de usar NgModules de forma obligatoria, simplificando la estructura del código, agilizando el Lazy Loading y optimizando el Tree-shaking.", c: "Deshabilitan el sistema de inyección de dependencias de Angular.", correct: "B" },
+                { id: 13, p: "13. Si necesitas combinar múltiples flujos de observables en paralelo y esperar a que todos completen para emitir un objeto con las últimas respuestas, ¿qué operador usás?", a: "switchMap", b: "forkJoin", c: "concatMap", correct: "B" },
+                { id: 14, p: "14. Al configurar Preloading Strategies para las rutas Lazy Loaded de Angular, ¿qué beneficio se busca?", a: "Cargar la totalidad de la base de datos relacional en la memoria del navegador.", b: "Descargar los archivos modulares en segundo plano una vez que la aplicación inicial ha cargado, mejorando la velocidad de navegación posterior sin penalizar el arranque inicial.", c: "Cifrar las peticiones de red mediante algoritmos asíncronos.", correct: "B" },
+                { id: 15, p: "15. ¿Qué diferencia de comportamiento crítico tiene el operador exhaustMap frente a switchMap al procesar eventos rápidos de clicks?", a: "exhaustMap cancela las ejecuciones en curso para darle prioridad al nuevo click.", b: "exhaustMap ignora las nuevas emisiones externas mientras la petición interna actual esté activa, ideal para evitar envíos de formularios duplicados.", c: "switchMap bloquea por completo la interfaz del usuario.", correct: "B" },
+                { id: 16, p: "16. ¿Cuál es el rol de un Custom Router State Serializer en aplicaciones empresariales complejas que usan NgRx Router Store?", a: "Comprimir los archivos de imágenes antes de renderizar la ruta.", b: "Reducir y limpiar la metadata pesada del estado de la ruta devuelto por Angular, guardando en el Store global únicamente los parámetros y la URL necesarios.", c: "Generar URLs dinámicas de manera aleatoria.", correct: "B" },
+                { id: 17, p: "17. ¿Qué funcionalidad avanzada aporta la función inject() introducida en las últimas versiones en comparación con la inyección clásica por constructor?", a: "Permite inyectar código HTML directo en los estilos CSS del componente.", b: "Permite inyectar dependencias en contextos funcionales fuera de las clases (como funciones funcionales de Routes Guards o Custom Pipes) y mejora la inferencia de tipos.", c: "Elimina la necesidad de compilar los archivos TypeScript.", correct: "B" },
+                { id: 18, p: "18. ¿Cómo afecta la configuración de la propiedad 'optimization' dentro del build de angular.json al entorno de producción?", a: "Aumenta la cantidad de archivos de logs guardados de forma local.", b: "Activa la minificación de scripts y CSS, remoción de comentarios, tree-shaking agresivo y optimizaciones de código para reducir el bundle al mínimo.", c: "Habilita la depuración de código fuente mediante source maps públicos.", correct: "B" },
+                { id: 19, p: "19. Al utilizar la función defer() (@defer) introducida en las vistas de Angular 17, ¿qué optimización avanzada lográs?", a: "Suspender la ejecución de la app en caso de pérdida de conexión a internet.", b: "Diferir la carga del bundle de JavaScript y el renderizado de bloques específicos del HTML hasta que se cumpla una condición técnica (como entrar al viewport o interacción).", c: "Forzar el procesamiento de datos del lado del servidor de forma síncrona.", correct: "B" },
+                { id: 20, p: "20. ¿Qué ventaja tiene utilizar interceptores de tipo funcional sobre los interceptores tradicionales basados en clases orientadas a objetos?", a: "Son los únicos compatibles con bases de datos relacionales locales.", b: "Son más ligeros, fáciles de testear, se integran de forma nativa con el esquema modular Standalone y se configuran directamente mediante funciones lambda.", c: "Bloquean los ataques informáticos XSS de forma 100% nativa sin DomSanitizer.", correct: "B" }
+            ]
+        }
+    };
+
+    // LÓGICA DE ROTACIÓN ALEATORIA: SELECCIÓN DE 10 DE 20 PREGUNTAS POR NIVEL
+    function getRandomQuestions(bank, count) {
+        let shuffled = [...bank];
+        for (let i = shuffled.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+        }
+        return shuffled.slice(0, count);
+    }
+
+    const currentLevel = localStorage.getItem('nivel_elegido') || 'angular_jr';
+    const examData = examDatabase[currentLevel];
+    
+    document.getElementById('exam-title').innerText = examData.title;
+    const container = document.getElementById('questions-container');
+    
+    // Elegir 10 preguntas al azar del banco del nivel seleccionado
+    const selectedQuestions = getRandomQuestions(examData.questions, 10);
+    
+    selectedQuestions.forEach((item, index) => {
+        const visualIndex = index + 1;
+        const cleanText = item.p.replace(/^\d+\.\s*/, '');
+        
+        container.innerHTML += `
+            <div class="question" data-id="${item.id}" data-correct="${item.correct}">
+                <p>${visualIndex}. ${cleanText}</p>
+                <label><input type="radio" name="q${item.id}" value="A"> A) ${item.a}</label>
+                <label><input type="radio" name="q${item.id}" value="B"> B) ${item.b}</label>
+                <label><input type="radio" name="q${item.id}" value="C"> C) ${item.c}</label>
+            </div>
+        `;
+    });
+
+    let timeLimit = 15 * 60;
+    const timerDisplay = document.getElementById('time');
+    const timerInterval = setInterval(() => {
+        let minutes = Math.floor(timeLimit / 60);
+        let seconds = timeLimit % 60;
+        timerDisplay.innerText = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+        if (timeLimit <= 0) { clearInterval(timerInterval); processAndSend(true); }
+        timeLimit--;
+    }, 1000);
+
+    function processAndSend(isAuto) {
+        clearInterval(timerInterval);
+        let score = 0;
+        let details = [];
+        let unanswered = false;
+
+        selectedQuestions.forEach((item) => {
+            const selected = document.querySelector(`input[name="q${item.id}"]:checked`);
+            if (!selected && !isAuto) { unanswered = true; }
+            
+            let val = selected ? selected.value : "X";
+            details.push(`PreguntaID_${item.id}:${val}`);
+            if (val === item.correct) score++;
+        });
+
+        if (unanswered && !isAuto) { 
+            alert("Por favor responde todas las preguntas antes de finalizar."); 
+            return; 
+        }
+
+        let seniority = "Junior (Jr)";
+        if (score >= 9) seniority = "Senior (Sr)";
+        else if (score >= 6) seniority = "Semi-Senior (Ssr)";
+
+        localStorage.setItem('test_realizado', 'true');
+
+        document.getElementById('form_nombre').value = localStorage.getItem('candidato_nombre');
+        document.getElementById('form_email').value = localStorage.getItem('candidato_email');
+        document.getElementById('form_tech').value = examData.title;
+        document.getElementById('form_score').value = `${score} / 10`;
+        document.getElementById('form_seniority').value = seniority;
+        document.getElementById('form_details').value = details.join(", ");
+
+        document.getElementById('timer-sticky').style.display = "none";
+        document.getElementById('main-container').style.display = "none";
+        document.getElementById('thanks-box').style.display = "block";
+
+        document.getElementById('hiddenRecruiterForm').submit();
+    }
+</script>
+</body>
+</html>
