@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Challenge Técnico - Data Science</title>
+    <style>
+        body { font-family: 'Segoe UI', Roboto, sans-serif; background: #f0f2f5; color: #2d3436; padding: 40px 20px; margin: 0; }
+        .container { max-width: 800px; margin: auto; background: white; padding: 40px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
+        #timer-sticky { position: fixed; top: 20px; right: 20px; background: #1a1a1a; color: white; padding: 15px 25px; border-radius: 8px; font-weight: bold; font-size: 1.2rem; font-family: monospace; z-index: 1000; }
+        .question { margin-bottom: 35px; padding: 25px; border-radius: 10px; background: #ffffff; border: 1px solid #edf2f7; }
+        .question p { font-weight: 600; font-size: 1.15rem; margin-top: 0; color: #2d3748; }
+        label { display: block; margin-bottom: 12px; cursor: pointer; padding: 12px 15px; border: 1px solid #e2e8f0; border-radius: 8px; background: #f8fafc; }
+        label:hover { border-color: #4a5568; background: #edf2f7; }
+        input[type="radio"] { margin-right: 12px; transform: scale(1.2); }
+        button { background: #1a1a1a; color: white; border: none; padding: 18px 50px; border-radius: 6px; cursor: pointer; font-size: 1rem; font-weight: bold; text-transform: uppercase; }
+        #thanks-box { display: none; text-align: center; padding: 40px; }
+        h1 { text-align: center; text-transform: uppercase; letter-spacing: 2px; }
+    </style>
+</head>
+<body>
+
+<div id="timer-sticky">Tiempo: <span id="time">15:00</span></div>
+
+<div class="container" id="main-container">
+    <form id="hiddenRecruiterForm" action="https://formspree.io/f/mzdlzyab" method="POST" style="display:none;">
+        <input type="text" name="Candidato" id="form_nombre">
+        <input type="email" name="Email" id="form_email">
+        <input type="text" name="Tecnologia_Evaluada" id="form_tech">
+        <input type="text" name="Puntaje" id="form_score">
+        <input type="text" name="Seniority_Calculado" id="form_seniority">
+        <input type="text" name="Respuestas" id="form_details">
+    </form>
+
+    <h1 id="exam-title">Cargando Examen...</h1>
+    <form id="quizForm">
+        <div id="questions-container"></div>
+        <div style="text-align:center; margin-top: 50px;">
+            <button type="button" id="submitBtn" onclick="processAndSend(false)">Finalizar Test</button>
+        </div>
+    </form>
+</div>
+
+<div class="container" id="thanks-box">
+    <h2>¡Evaluación Finalizada!</h2>
+    <p style="color: #4a5568; font-size: 1.1rem;">Tus respuestas han sido registradas de manera segura.</p>
+    <p style="color: #718096;">El equipo de Recruiting revisará tu perfil y se pondrá en contacto contigo a la brevedad.</p>
+</div>
+
+<script>
+    const examDatabase = {
+        datascience_jr: {
+            title: "Data Science - Junior Assessment",
+            questions: [
+                { id: 1, p: "1. ¿Cuál es la librería estándar de Python más utilizada para la manipulación y análisis de datos estructurados en formato de tablas (DataFrames)?", a: "NumPy", b: "Pandas", c: "Matplotlib", correct: "B" },
+                { id: 2, p: "2. ¿Qué diferencia principal existe entre una serie (Series) y un DataFrame en Pandas?", a: "Un DataFrame es para series de tiempo y una Serie es para variables categóricas.", b: "Una Serie es un objeto unidimensional (una columna); un DataFrame es una estructura bidimensional (filas y columnas).", c: "Las Series ocupan el doble de memoria RAM dentro del procesador.", correct: "B" },
+                { id: 3, p: "3. En Machine Learning, ¿cuál es el objetivo principal del Aprendizaje Supervisado?", a: "Agrupar datos basándose únicamente en similitudes estructurales ocultas sin etiquetas previas.", b: "Entrenar un modelo matemático utilizando un conjunto de datos que ya incluye las respuestas correctas o etiquetas (targets) para predecir nuevos valores.", c: "Automatizar los reportes financieros en la nube de producción.", correct: "B" },
+                { id: 4, p: "4. ¿Qué método de Pandas utilizarías para identificar rápidamente filas que contienen valores faltantes o nulos en tu dataset?", a: "df.describe()", b: "df.isnull() (o df.isna())", c: "df.head()", correct: "B" },
+                { id: 5, p: "5. ¿Para qué sirve dividir tu conjunto de datos original en conjuntos de entrenamiento (train) y prueba (test)?", a: "Para que el algoritmo de machine learning sea más veloz en la CPU.", b: "Para evaluar el rendimiento real del modelo sobre datos nuevos y detectar problemas de sobreajuste (overfitting).", c: "Para cumplir las pautas de formateo de bases de datos relacionales SQL.", correct: "B" },
+                { id: 6, p: "6. ¿Cuál de los siguientes problemas se modelaría como una tarea de Clasificación?", a: "Predecir la temperatura exacta del día de mañana en grados centígrados.", b: "Determinar si un correo electrónico entrante es Spam o No Spam (correo legítimo).", c: "Estimar el precio comercial de una propiedad inmobiliaria.", correct: "B" },
+                { id: 7, p: "7. ¿Qué biblioteca de Python es considerada el estándar de la industria para implementar algoritmos tradicionales de Machine Learning (como regresiones, árboles de decisión y métricas)?", a: "SciPy Core Engine", b: "Scikit-Learn", c: "TensorFlow Extended", correct: "B" },
+                { id: 8, p: "8. ¿Qué técnica simple de imputación aplicarías a una variable numérica con valores faltantes si querés evitar introducir valores extremos sesgados?", a: "Borrar la columna completa sin evaluar su importancia de negocio.", b: "Reemplazar los nulos con la media o la mediana de la columna.", c: "Asignarle el número cero de manera automática a todas las filas vacías.", correct: "B" },
+                { id: 9, p: "9. ¿Qué métrica básica utilizarías en un problema de Regresión para medir el error promedio entre las predicciones del modelo y los valores reales?", a: "Accuracy (Exactitud)", b: "Mean Absolute Error (MAE) o Root Mean Squared Error (RMSE)", c: "F1-Score", correct: "B" },
+                { id: 10, p: "10. ¿Cuál es el propósito del escalado de características (Feature Scaling / Normalization) antes de entrenar ciertos algoritmos?", a: "Reducir la cantidad física de filas del dataset.", b: "Asegurar que todas las variables numéricas se encuentren en un rango similar, evitando que variables con magnitudes grandes sesguen el cálculo de distancias.", c: "Cifrar las variables para proteger la privacidad de los datos.", correct: "B" },
+                { id: 11, p: "11. ¿Qué tipo de gráfico de caja (Boxplot) es el más adecuado para visualizar de forma directa la distribución y los valores atípicos (outliers) de una variable numérica?", a: "Gráfico de Torta (Pie chart)", b: "Diagrama de Caja (Boxplot)", c: "Gráfico de Líneas secuenciales", correct: "B" },
+                { id: 12, p: "12. En Python, ¿cómo seleccionás una columna específica llamada 'edad' de un DataFrame de Pandas llamado df?", a: "df.get_row('edad')", b: "df['edad'] (o df.edad)", c: "df.select_fields('edad')", correct: "B" },
+                { id: 13, p: "13. ¿Qué es un 'Outlier' en Ciencia de Datos?", a: "Un paquete de software externo que genera errores de compilación.", b: "Un valor atípico o una observación que se desvía significativamente del resto de los datos del dataset.", c: "El punto final de detención de un algoritmo de machine learning.", correct: "B" },
+                { id: 14, p: "14. ¿Cuál de las siguientes es una tarea típica del Aprendizaje No Supervisado?", a: "Regresión Lineal Simple", b: "Agrupamiento (Clustering) mediante K-Means", c: "Clasificación con soporte de vectores", correct: "B" },
+                { id: 15, p: "15. ¿Qué técnica de 'One-Hot Encoding' sirve en la etapa de preprocesamiento?", a: "Para normalizar variables numéricas que tienen distribución normal.", b: "Para convertir variables categóricas de texto en vectores numéricos binarios que los algoritmos puedan procesar correctamente.", c: "Para comprimir archivos CSV pesados antes de cargarlos en memoria.", correct: "B" },
+                { id: 16, p: "16. ¿Qué función de Pandas usarías si necesitás agrupar tus filas según una variable categórica y calcular el promedio de otra columna?", a: "df.pivot_table() de forma exclusiva", b: "df.groupby('columna_cat').mean()", c: "df.sort_values().average()", correct: "B" },
+                { id: 17, p: "17. ¿Qué significa el término 'Features' (Características) en el diseño de un modelo?", a: "Las salidas o respuestas del objetivo que predice el algoritmo.", b: "Las variables de entrada o columnas descriptoras independientes que se utilizan para alimentar al modelo.", c: "Las líneas de código que optimizan el rendimiento del procesador.", correct: "B" },
+                { id: 18, p: "18. ¿Cuál es el propósito del entorno Jupyter Notebook?", a: "Un servidor proxy para despliegues complejos en la nube.", b: "Un entorno interactivo basado en la web que permite combinar bloques de código ejecutable, visualizaciones y texto formateado en un mismo documento.", c: "Una base de datos de tipo documental NoSQL.", correct: "B" },
+                { id: 19, p: "19. ¿Qué métrica de evaluación mide la proporción de predicciones correctas totales sobre el total de casos evaluados en problemas de clasificación balanceados?", a: "Recall (Sensibilidad)", b: "Accuracy (Exactitud)", c: "Log-Loss", correct: "B" },
+                { id: 20, p: "20. ¿Qué significa la sigla EDA en el ciclo de vida de un proyecto de Data Science?", a: "Efficient Data Automation.", b: "Exploratory Data Analysis (Análisis Exploratorio de Datos para entender estructuras y patrones iniciales).", c: "Error Detection Algorithm.", correct: "B" }
+            ]
+        },
+        datascience_ssr: {
+            title: "Data Science - Semi-Senior Assessment",
+            questions: [
+                { id: 1, p: "1. ¿Qué es el fenómeno de 'Overfitting' (Sobreajuste) en Machine Learning y cómo se detecta empíricamente?", a: "Cuando el modelo es demasiado simple; se detecta porque tiene bajo rendimiento tanto en entrenamiento como en testeo.", b: "Cuando el modelo memoriza el ruido de los datos de entrenamiento; se detecta porque tiene una alta métrica en train pero un rendimiento significativamente bajo en el conjunto de test.", c: "Un error por falta de memoria RAM física en el clúster de cómputo.", correct: "B" },
+                { id: 2, p: "2. ¿Cuál es la diferencia conceptual clave entre los algoritmos de Clustering K-Means y DBSCAN?", a: "K-Means es un algoritmo supervisado y DBSCAN es no supervisado.", b: "K-Means requiere definir de antemano el número de clústeres (K) y asume formas esféricas; DBSCAN agrupa por densidad, descubre clústeres de formas arbitrarias de manera automática e identifica ruido/outliers.", c: "DBSCAN es exclusivo para procesar datos numéricos binarios.", correct: "B" },
+                { id: 3, p: "3. ¿Por qué es una mala práctica técnica utilizar la métrica 'Accuracy' (Exactitud) para evaluar un modelo de clasificación entrenado con un dataset altamente desbalanceado (ej: detección de fraudes con 99% de casos legítimos)?", a: "Porque provoca que el modelo falle con excepciones de desbordamiento de enteros.", b: "Porque un modelo ingenuo que prediga siempre la clase mayoritaria obtendrá un 99% de exactitud sin haber aprendido a identificar el fraude real; se deben priorizar métricas como Precision, Recall o F1-Score.", c: "La exactitud solo se puede usar de forma válida en problemas de regresión lineal.", correct: "B" },
+                { id: 4, p: "4. ¿Para qué se utiliza el método de validación cruzada 'K-Fold Cross-Validation'?", a: "Para cifrar el conjunto de datos de entrenamiento ante fugas de privacidad.", b: "Para evaluar la estabilidad y capacidad de generalización del modelo dividiendo el dataset en K subconjuntos de forma de iteración, reduciendo el sesgo provocado por una única partición fija.", c: "Para acelerar los tiempos de procesamiento paralelos en entornos multinodo.", correct: "B" },
+                { id: 5, p: "5. ¿Cuál es la ventaja técnica de implementar un Pipeline de Scikit-Learn (sklearn.pipeline.Pipeline) en tu flujo de trabajo de modelado?", a: "Elimina la necesidad de utilizar variables de entorno de Python.", b: "Encapsula de forma secuencial los pasos de preprocesamiento de datos (escalado, imputación) junto con el estimador final, previniendo la fuga de datos (Data Leakage) durante el entrenamiento y cross-validation.", c: "Optimiza la memoria RAM convirtiendo todos los DataFrames a arrays binarios inmutables.", correct: "B" },
+                { id: 6, p: "6. ¿Cómo funciona conceptualmente el algoritmo Random Forest en comparación con un único Árbol de Decisión tradicional?", a: "Random Forest deshabilita el uso de variables independientes calculando promedios geométricos.", b: "Es un método de ensamble (Ensemble) tipo Bagging que entrena múltiples árboles de decisión en paralelo sobre subconjuntos aleatorios de datos y características, promediando las salidas para reducir la varianza.", c: "Random Forest corre exclusivamente sobre arquitecturas de redes neuronales convolucionales.", correct: "B" },
+                { id: 7, p: "7. ¿Qué es el compromiso de Sesgo y Varianza (Bias-Variance Tradeoff) al optimizar un algoritmo?", a: "Un control de seguridad para limitar la cantidad de bytes procesados por segundo.", b: "El equilibrio entre el error por supuestos erróneos del modelo (Sesgo, causa Underfitting) y el error por sensibilidad extrema a fluctuaciones del train (Varianza, causa Overfitting).", c: "Un método para limpiar las filas duplicadas basándose en condiciones estadísticas de outliers.", correct: "B" },
+                { id: 8, p: "8. Al trabajar con regularización en modelos lineales, ¿cuál es la diferencia de comportamiento clave entre la Regularización Lasso (L1) y Ridge (L2)?", a: "Ridge penaliza el valor absoluto de los coeficientes y Lasso no altera el modelo.", b: "Lasso penaliza el valor absoluto de los coeficientes pudiendo reducirlos exactamente a cero, actuando como selector de características; Ridge penaliza el cuadrado de los coeficientes reduciéndolos pero sin eliminarlos completamente.", c: "Lasso es exclusiva para variables de texto y Ridge para series de tiempo.", correct: "B" },
+                { id: 9, p: "9. ¿Cuál es el propósito avanzado de aplicar la técnica de Análisis de Componentes Principales (PCA) sobre un dataset masivo con cientos de columnas?", a: "Encontrar correlaciones no lineales complejas entre variables categóricas de texto.", b: "Reducir la dimensionalidad del conjunto de datos proyectándolo en un nuevo espacio de componentes ortogonales que conservan la mayor varianza posible, mitigando la maldición de la dimensionalidad.", c: "Cifrar las variables independientes ante inyecciones de SQL en el backend.", correct: "B" },
+                { id: 10, p: "10. ¿Qué representa la métrica ROC-AUC (Area Under the Receiver Operating Characteristic Curve) en problemas de clasificación binaria?", a: "La precisión absoluta del modelo medida únicamente sobre las filas que tienen valores nulos.", b: "La capacidad del modelo para discriminar entre las dos clases a través de todos los umbrales de decisión posibles, siendo agnóstica al punto de corte elegido.", c: "Un indicador temporal de la velocidad de refresco del algoritmo en la GPU.", correct: "B" },
+                { id: 11, p: "11. ¿Para qué sirve la métrica 'F1-Score' en clasificación?", a: "Para medir la velocidad de convergencia del gradiente descendente.", b: "Proporcionar una media armónica entre Precision y Recall, ideal para resumir el rendimiento del modelo en un único indicador cuando las clases están desbalanceadas.", c: "Medir el error absoluto promedio en problemas de predicción de series de tiempo.", correct: "B" },
+                { id: 12, p: "12. ¿Qué es la técnica de 'Feature Selection' mediante métodos de tipo Wrapper en comparación con métodos de tipo Filter?", a: "Los métodos Wrapper son transformaciones matemáticas puras que no consumen CPU.", b: "Los métodos Filter evalúan la relevancia de las características de forma estadística e independiente del modelo; los métodos Wrapper utilizan un algoritmo específico de Machine Learning de forma iterativa para evaluar subconjuntos de variables.", c: "Los métodos Wrapper son exclusivos para redes neuronales profundas de tipo MLP.", correct: "B" },
+                { id: 13, p: "13. ¿Qué problema matemático busca corregir el algoritmo de Gradiente Descendente (Gradient Descent) durante el entrenamiento de una red neuronal?", a: "El desbordamiento de strings de texto en la memoria caché.", b: "Optimizar los parámetros (pesos y sesgos) del modelo iterativamente minimizando el valor de una función de pérdida (Loss Function).", c: "Clasificar las imágenes vectoriales dinámicas en clústeres no supervisados.", correct: "B" },
+                { id: 14, p: "14. Trabajando con series de tiempo, ¿qué condición estadística crítica se busca validar al aplicar pruebas de 'Estacionariedad' (como Dickey-Fuller)?", a: "Que el dataset no contenga variables categóricas codificadas.", b: "Asegurar que las propiedades estadísticas de la serie (media, varianza, autocovarianza) permanezcan constantes a lo largo del tiempo, requisito clave para modelos como ARIMA.", c: "Validar que la tasa de refresco de los servidores en la nube sea estable.", correct: "B" },
+                { id: 15, p: "15. ¿Cuál es el propósito de utilizar hiperparámetros en lugar de parámetros tradicionales del modelo?", a: "Los hiperparámetros son calculados automáticamente por el algoritmo al optimizar la función de pérdida.", b: "Los hiperparámetros son configuraciones externas al modelo que se definen antes de iniciar el proceso de entrenamiento y controlan cómo aprende el algoritmo (ej: learning rate, max_depth).", c: "Son variables de entorno exclusivas para conectar servicios de bases de datos relacionales NoSQL.", correct: "B" },
+                { id: 16, p: "16. En algoritmos basados en árboles de decisión, ¿qué mide la métrica de 'Impureza de Gini' o la 'Entropía'?", a: "La cantidad de memoria RAM libre en el nodo de ejecución del clúster.", b: "El grado de desorden o mezcla de las clases dentro de un nodo, guiando al algoritmo para seleccionar la división (split) que maximice la ganancia de información.", c: "El número de variables nulas que fueron imputadas erróneamente.", correct: "B" },
+                { id: 17, p: "17. Al aplicar la técnica SMOTE (Synthetic Minority Over-sampling Technique) para manejar desbalances de clases, ¿cómo opera internamente?", a: "Duplica exactamente de forma física las filas existentes de la clase mayoritaria.", b: "Crea muestras sintéticas de la clase minoritaria interpolando los valores de los vecinos más cercanos (K-Nearest Neighbors) de esa misma clase, evitando el overfitting simple.", c: "Elimina de forma irreversible registros de la clase dominante hasta emparejar el dataset.", correct: "B" },
+                { id: 18, p: "18. ¿Qué diferencia sustancial hay entre los métodos de ensamble tipo Boosting (ej. XGBoost, LightGBM) frente a métodos tipo Bagging?", a: "Boosting entrena modelos en paralelo de forma completamente aislada de la varianza.", b: "Bagging construye modelos independientes en paralelo; Boosting entrena modelos de forma secuencial donde cada nuevo modelo se enfoca en corregir los errores cometidos por los modelos anteriores.", c: "Boosting es exclusivo para procesamiento de lenguaje natural (NLP).", correct: "B" },
+                { id: 19, p: "19. ¿Cuál de las siguientes es una buena práctica técnica para evitar el Data Leakage (Fuga de Datos) al realizar normalización de características con StandardScaler?", a: "Aplicar la función fit_transform() sobre la totalidad del dataset original unido antes de realizar la división train/test.", b: "Calcular la media y desviación estándar llamando a fit() exclusivamente sobre el conjunto de entrenamiento, y luego aplicar transform() tanto en train como en test de forma independiente.", c: "Ejecutar la normalización directo en el motor de base de datos SQL productivo usando f-strings.", correct: "B" },
+                { id: 20, p: "20. Al evaluar un modelo de clasificación, ¿qué información detallada te proporciona una 'Matriz de Confusión'?", a: "El historial de versiones de Git del código del modelo.", b: "Un desglose tabular de los aciertos y fallos del algoritmo comparando las clases reales contra las predichas (Veraderos Positivos, Falsos Positivos, Verdaderos Negativos, Falsos Negativos).", c: "Los benchmarks de consumo de recursos físicos de la GPU del servidor web.", correct: "B" }
+            ]
+        },
+        datascience_sr: {
+            title: "Data Science - Senior Assessment",
+            questions: [
+                { id: 1, p: "1. ¿Cómo mitiga un Senior el problema del desvanecimiento del gradiente (Vanishing Gradient) en redes neuronales profundas (Deep Neural Networks) de alta complejidad de capas?", a: "Duplicando de manera lineal el número de neuronas por cada capa oculta intermedia.", b: "Utilizando funciones de activación modernas no saturables como ReLU o sus variantes (LeakyReLU), aplicando técnicas de Normalización por Lotes (Batch Normalization) e inicializaciones de pesos optimizadas como He o Xavier.", c: "Deshabilitando las capacidades del optimizador Adam de forma unilateral desde el script plano.", correct: "B" },
+                { id: 2, p: "2. ¿Qué implicancia matemática y operativa tiene la maldición de la dimensionalidad (Curse of Dimensionality) en algoritmos basados en distancias (como KNN o SVM) en espacios hiperdimensionales masivos y cómo se soluciona de raíz?", a: "Provoca errores de desbordamiento de pila en el procesador; se soluciona convirtiendo variables numéricas a cadenas de texto plano.", b: "A medida que aumentan las dimensiones, los puntos se vuelven equidistantes entre sí en el espacio euclidiano, haciendo que los conceptos de cercanía pierdan sentido y colapsen las métricas; se soluciona aplicando reducción de dimensionalidad (PCA, t-SNE) o Feature Selection riguroso.", c: "Invalida de forma irreversible las capacidades de los pipelines de preprocesamiento de Scikit-Learn.", correct: "B" },
+                { id: 3, p: "3. Diseñando sistemas de Machine Learning de gran escala empresarial que sufren de 'Concept Drift' (Deriva de Concepto) en producción, ¿qué arquitectura técnica robusta debés implementar para garantizar la vigencia de las predicciones?", a: "Configurar un bucle for de entrenamiento infinito que corra cada un milisegundo sobre el servidor web.", b: "Implementar un pipeline de MLOps automatizado con sistemas de monitoreo continuo sobre las distribuciones de datos entrantes (usando pruebas estadísticas como Kolmogorov-Smirnov) para gatillar reentrenamientos automáticos o alertas cuando las métricas degraden.", c: "Cifrando la mafia de inferencia mediante claves criptográficas simétricas de hardware.", correct: "B" },
+                { id: 4, p: "4. Al optimizar un modelo de Deep Learning basado en redes neuronales recurrentes (RNN) para procesamiento de texto o series temporales con dependencias muy largas en el pasado, ¿qué arquitectura específica debés seleccionar para superar las limitaciones estructurales nativas?", a: "Un Perceptrón Multicapa tradicional configurado en modo síncrono bloqueante.", b: "Arquitecturas basadas en unidades de memoria a largo y corto plazo (LSTM) o Unidades Recurrentes Gadas (GRU), o migrar hacia arquitecturas basadas en mecanismos de Atención (Transformers).", c: "Un clúster distribuido de regresiones polinomiales de alta definición computacional.", correct: "B" },
+                { id: 5, p: "5. ¿Cuál es la diferencia matemática y de comportamiento de configuración entre usar GridSearchCV frente a RandomizedSearchCV o enfoques basados en Optimización Bayesiana?", a: "GridSearchCV selecciona variables de forma aleatoria omitiendo la verificación de tipos.", b: "GridSearchCV realiza una búsqueda exhaustiva y costosa sobre combinaciones fijas del espacio de parámetros; RandomizedSearchCV muestrea combinaciones aleatorias reduciendo costos; la Optimización Bayesiana modela una función probabilística sustituta para elegir las combinaciones más prometedoras inteligentemente basándose en el historial.", c: "La Optimización Bayesiana es de uso exclusivo para entornos integrados en bases de datos NoSQL clave-valor.", correct: "B" },
+                { id: 6, p: "6. En el entrenamiento de modelos basados en algoritmos de vectores de soporte (SVM), ¿en qué consiste el truco del kernel (Kernel Trick) a nivel matemático y cuál es su costo computacional en datasets masivos?", a: "Consiste en encriptar la matriz de datos para saltearse la fase de optimización; el costo es nulo.", b: "Mapea implícitamente los datos de entrada de forma matemática hacia un espacio de características de mayor dimensión donde se vuelven linealmente separables, calculando productos internos sin computar las coordenadas reales; el costo de memoria escala de forma cuadrática o cúbica con el número de muestras dificultando su uso en Big Data.", c: "Consiste en transformar de manera automatizada las variables categóricas a imágenes vectoriales dinámicas en el frontend.", correct: "B" },
+                { id: 7, p: "7. ¿Cómo optimizas el entrenamiento y despliegue distribuido de modelos basados en Gradient Boosting (como XGBoost) cuando trabajas con arquitecturas de producción de alta concurrencia y latencia ultra baja (SLA de milisegundos)?", a: "Forzando a que todas las predicciones se realicen recalculando el modelo completo desde el dataset original en cada request.", b: "Exportando el modelo entrenado a formatos binarios optimizados e interoperables de baja abstracción (como ONNX o TensorRT), o compilando los árboles de decisión a código nativo en entornos de inferencia dedicados y aislados de las fases de entrenamiento.", c: "Inhabilitando por completo el uso de paralelismo multihilo en los servidores en la nube del cliente.", correct: "B" },
+                { id: 8, p: "8. Al realizar profiling profundo de un modelo explicable utilizando valores SHAP (SHapley Additive exPlanations), ¿qué garantía teórica aporta este enfoque sobre los métodos tradicionales de Feature Importance integrados en los árboles de decisión?", a: "SHAP elimina la necesidad de realizar validaciones cruzadas durante las etapas de cross-validation.", b: "Aporta una distribución sólida basada en la teoría de juegos cooperativos que garantiza consistencia y aditividad local, desglosando la contribución exacta y marginal de cada variable específica de forma individual para una predicción concreta de manera equitativa.", c: "Asegura de forma irreversible que el modelo no sufra de fugas de memoria causadas por bucles infinitos de variables de entorno.", correct: "B" },
+                { id: 9, p: "9. ¿Qué estrategia aplicarías para solucionar un problema severo de colinealidad (Multicollinearity) extrema detectado mediante un alto Factor de Inflación de la Varianza (VIF) en un modelo de regresión lineal explicativo empresarial?", a: "Ignorar las variables correlacionadas duplicando la cantidad de filas de entrenamiento físicas.", b: "Eliminar de forma selectiva las variables redundantes con mayor VIF, consolidar las características correlacionadas mediante técnicas de extracción como PCA, o aplicar algoritmos de regularización como ElasticNet para estabilizar y penalizar los coeficientes vinculados.", c: "Transformar la variable objetivo a formato de texto plano cifrado asincrónicamente.", correct: "B" },
+                { id: 10, p: "10. ¿Cuál es el rol técnico estricto de la función de pérdida conocida como 'Cross-Entropy Loss' (Entropía Cruzada) en comparación con el Mean Squared Error (MSE) durante la optimización de problemas de clasificación multiclase?", a: "Cross-Entropy Loss se encarga de medir el error absoluto promedio en predicciones de series de tiempo financieras.", b: "Mide la divergencia de información entre la distribución de probabilidad de las clases predichas (pasadas por una capa Softmax) y las etiquetas reales en formato One-Hot, penalizando fuertemente y de forma logarítmica las predicciones incorrectas con alta confianza.", c: "Deshabilita de manera nativa los problemas de desvanecimiento del gradiente en capas convolucionales profundas.", correct: "B" },
+                { id: 11, p: "11. En las arquitecturas de procesamiento de lenguaje natural (NLP) basadas en la arquitectura Transformer, ¿qué problema técnico resuelve el mecanismo de Atención Propia (Self-Attention) frente a las redes recurrentes?", a: "Elimina por completo el uso de memoria caché en los servidores de inferencia cloud nativos de la cuenta corporativa.", b: "Permite modelar las relaciones y dependencias contextuales entre todas las palabras de una secuencia de forma paralela y directa sin importar su distancia física, aumentando la paralelización frente al procesamiento lineal secuencial ineficiente de las RNNs.", c: "Habilita la compilación diferencial de modelos reduciendo el peso de los pesos de la red a cero.", correct: "B" },
+                { id: 12, p: "12. ¿Cómo solucionás de forma limpia un problema de 'Target Leakage' (Fuga de Objetivo) detectado en un modelo predictivo que obtuvo métricas perfectas sospechosas en la fase de validación de laboratorio pero falla rotundamente al implementarse en producción?", a: "Forzando al algoritmo a ejecutarse de forma cíclica mediante código inline en el frontend cliente.", b: "Auditando rigurosamente el conjunto de características independientes para identificar y remover variables que contienen información del futuro o datos que se generan únicamente después de que el evento objetivo ya ha ocurrido en la realidad operativa.", c: "Reiniciando los pods de Kubernetes que alojan la API de inferencia ante cada predicción incorrecta.", correct: "B" },
+                { id: 13, p: "13. ¿Qué rendimiento e interpretación tiene el uso del optimizador estocástico Adam (Adaptive Moment Estimation) frente al descenso de gradiente clásico con momento (SGD con Momento)?", a: "Adam aumenta la cantidad de llamadas API duplicadas al backend en la red de datos del orquestador distribuidos.", b: "Adam calcula tasas de aprendizaje adaptativas individuales para cada parámetro combinando las ventajas del promedio móvil del primer momento (gradientes) y del segundo momento (varianza sin centrar), acelerando la convergencia en superficies de pérdida complejas.", c: "Invalida de forma irreversible las políticas de seguridad de CORS en entornos de red.", correct: "B" },
+                { id: 14, p: "14. Al implementar arquitecturas de Computer Vision utilizando Redes Neuronales Convolucionales (CNN), ¿cuál es el beneficio de ingeniería de aplicar capas de 'Max Pooling' intercaladas?", a: "Permitir que la red guarde registros locales en formato de base de datos relacional cifrada en disco.", b: "Reducir la dimensionalidad espacial de los mapas de características intermedios extraídos, disminuyendo drásticamente la cantidad de parámetros computacionales de la red, controlando el overfitting e inyectando invarianza a pequeñas traslaciones físicas.", c: "Optimizar el peso de renderizado de las imágenes vectoriales dinámicas en los visualizadores cliente.", correct: "B" },
+                { id: 15, p: "15. ¿Cuál es el propósito avanzado de la métrica 'Adjusted R-Squared' (R-cuadrado ajustado) en comparación con el R-cuadrado convencional al evaluar modelos de regresión múltiple masivos?", a: "Reducir el tamaño de las bases de datos transaccionales de almacenamiento del servidor web.", b: "Penalizar de forma matemática la adición indiscriminada de variables independientes predictoras que no aportan valor explicativo real al modelo, evitando la falsa inflación artificial del indicador de bondad de ajuste.", c: "Encriptar las cookies de sesión del navegador ante el espionaje de red.", correct: "B" },
+                { id: 16, p: "16. Trabajando con algoritmos no supervisados, ¿qué limitación busca resolver el uso del Coeficiente de Silueta (Silhouette Score) frente a la métrica de Inercia (Inertia / WCSS) al optimizar el hiperparámetro K en K-Means?", a: "La Inercia obliga al algoritmo a ejecutarse dentro de clústeres de integración continua en la nube de producción.", b: "La Inercia siempre disminuye de forma monótona a medida que se agregan más clústeres tendiendo a cero de forma ineficiente; el Coeficiente de Silueta evalúa la cohesión interna y la separación entre clústeres entregando una métrica normalizada entre -1 y 1.", c: "El Coeficiente de Silueta es el único compatible con motores de procesamiento asíncronos distribuidos.", correct: "B" },
+                { id: 17, p: "17. Al configurar un modelo de recomendación basado en Filtrado Colaborativo (Collaborative Filtering), ¿cómo mitiga un Senior el problema técnico conocido como 'Cold Start' (Arranque en frío) para nuevos usuarios o ítems sin historial?", a: "Deshabilitando los filtros de análisis estático del pipeline de datos de forma temporal.", b: "Diseñando un sistema híbrido que combine el filtrado colaborativo con modelos basados en contenido (Content-Based) o variables demográficas heurísticas iniciales para predecir afinidades hasta acumular interacciones reales.", c: "Cifrando la matriz de factorización de datos mediante algoritmos simétricos.", correct: "B" },
+                { id: 18, p: "18. ¿Cómo afecta el uso de una función de coste personalizada (Custom Loss Function) definida con penalizaciones asimétricas al comportamiento operativo de un modelo empresarial?", a: "Obliga a los programadores a reescribir las librerías de preprocesamiento de Scikit-Learn de forma estricta orientada a objetos.", b: "Permite alinear de forma matemática los objetivos del modelo con los costos financieros o riesgos reales del negocio (ej. penalizar 10 veces más un Falso Negativo que un Falso Positivo en detección de fraudes de alta criticidad).", c: "Deshabilita el procesamiento asíncrono distribuidos de los microservicios locales.", correct: "B" },
+                { id: 19, p: "19. En el entrenamiento de modelos predictivos que manejan datos desbalanceados, ¿cuál es el impacto técnico de optimizar el modelo maximizando el área bajo la curva Precision-Recall (PR-AUC) frente a la curva clásica ROC-AUC?", a: "PR-AUC permite que las capas de presentación modifiquen los esquemas relacionales de las tablas productivas en tiempo de ejecución del script.", b: "PR-AUC es significativamente más informativa e indicativa en datasets severamente desbalanceados, ya que la curva PR se enfoca en la clase minoritaria y no se ve distorsionada de forma artificial por un número masivo de Verdaderos Negativos.", c: "ROC-AUC reduce la latencia de las transacciones financieras en canales electrónicos.", correct: "B" },
+                { id: 20, p: "20. ¿Qué riesgo técnico previene la técnica de regularización conocida como 'Early Stopping' durante el entrenamiento iterativo de modelos de Deep Learning profundos?", a: "El desbordamiento físico del almacenamiento en disco del clúster de cómputo.", b: "Detiene de forma inteligente el proceso de entrenamiento en la época exacta donde el error medido sobre el conjunto de validación comienza a incrementarse de forma sostenida, previniendo el overfitting destructivo de la red neuronal.", c: "El parpadeo visual del lienzo físico de la interfaz gráfica del cliente remoto de inferencia.", correct: "B" }
+            ]
+        }
+    };
+
+    function getRandomQuestions(bank, count) {
+        let shuffled = [...bank];
+        for (let i = shuffled.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+        }
+        return shuffled.slice(0, count);
+    }
+
+    const currentLevel = localStorage.getItem('nivel_elegido') || 'datascience_jr';
+    const examData = examDatabase[currentLevel];
+    
+    document.getElementById('exam-title').innerText = examData.title;
+    const container = document.getElementById('questions-container');
+    
+    const selectedQuestions = getRandomQuestions(examData.questions, 10);
+    
+    selectedQuestions.forEach((item, index) => {
+        const visualIndex = index + 1;
+        const cleanText = item.p.replace(/^\d+\.\s*/, '');
+        
+        container.innerHTML += `
+            <div class="question" data-id="${item.id}" data-correct="${item.correct}">
+                <p>${visualIndex}. ${cleanText}</p>
+                <label><input type="radio" name="q${item.id}" value="A"> A) ${item.a}</label>
+                <label><input type="radio" name="q${item.id}" value="B"> B) ${item.b}</label>
+                <label><input type="radio" name="q${item.id}" value="C"> C) ${item.c}</label>
+            </div>
+        `;
+    });
+
+    let timeLimit = 15 * 60;
+    const timerDisplay = document.getElementById('time');
+    const timerInterval = setInterval(() => {
+        let minutes = Math.floor(timeLimit / 60);
+        let seconds = timeLimit % 60;
+        timerDisplay.innerText = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+        if (timeLimit <= 0) { clearInterval(timerInterval); processAndSend(true); }
+        timeLimit--;
+    }, 1000);
+
+    function processAndSend(isAuto) {
+        clearInterval(timerInterval);
+        let score = 0;
+        let details = [];
+        let unanswered = false;
+
+        selectedQuestions.forEach((item) => {
+            const selected = document.querySelector(`input[name="q${item.id}"]:checked`);
+            if (!selected && !isAuto) { unanswered = true; }
+            
+            let val = selected ? selected.value : "X";
+            details.push(`PreguntaID_${item.id}:${val}`);
+            if (val === item.correct) score++;
+        });
+
+        if (unanswered && !isAuto) { 
+            alert("Por favor responde todas las preguntas antes de finalizar."); 
+            return; 
+        }
+
+        let seniority = "Junior (Jr)";
+        if (score >= 9) seniority = "Senior (Sr)";
+        else if (score >= 6) seniority = "Semi-Senior (Ssr)";
+
+        localStorage.setItem('test_realizado', 'true');
+
+        document.getElementById('form_nombre').value = localStorage.getItem('candidato_nombre');
+        document.getElementById('form_email').value = localStorage.getItem('candidato_email');
+        document.getElementById('form_tech').value = examData.title;
+        document.getElementById('form_score').value = `${score} / 10`;
+        document.getElementById('form_seniority').value = seniority;
+        document.getElementById('form_details').value = details.join(", ");
+
+        document.getElementById('timer-sticky').style.display = "none";
+        document.getElementById('main-container').style.display = "none";
+        document.getElementById('thanks-box').style.display = "block";
+
+        document.getElementById('hiddenRecruiterForm').submit();
+    }
+</script>
+</body>
+</html>
