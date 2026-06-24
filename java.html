@@ -30,6 +30,7 @@
         <input type="text" name="Puntaje" id="form_score">
         <input type="text" name="Seniority_Calculado" id="form_seniority">
         <input type="text" name="Respuestas" id="form_details">
+        <input type="text" name="Reclutadora_Asignada" id="form_reclutadora">
     </form>
 
     <h1 id="exam-title">Cargando Examen...</h1>
@@ -199,6 +200,7 @@
         document.getElementById('form_score').value = `${score} / 10`;
         document.getElementById('form_seniority').value = seniority;
         document.getElementById('form_details').value = details.join(", ");
+        document.getElementById('form_reclutadora').value = localStorage.getItem('reclutadora_asignada');
 
         document.getElementById('timer-sticky').style.display = "none";
         document.getElementById('main-container').style.display = "none";
