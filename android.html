@@ -1,3 +1,9 @@
+<script>
+    if (localStorage.getItem('test_realizado') === 'true') {
+        alert("Ya has completado esta evaluación. No puedes volver a realizarla.");
+        window.location.href = "index.html";
+    }
+</script>
 <!DOCTYPE html>
 <html lang="es">
 <head>
